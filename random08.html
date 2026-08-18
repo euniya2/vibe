@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오늘의 주인공 · 발표자 뽑기 &amp; 운세</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0b0d18; --panel:rgba(255,255,255,.055); --line:rgba(255,255,255,.12);
+    --txt:#eef1ff; --dim:#98a0c4; --gold:#ffcf6b; --accent:#8ea2ff;
+  }
+  body{
+    min-height:100vh; background:var(--bg); color:var(--txt);
+    font-family:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;
+    display:grid; grid-template-columns:320px 1fr; gap:20px; padding:20px;
+    overflow-x:hidden;
+  }
+  /* 무대 조명 */
+  body::before{
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:radial-gradient(circle at 62% 34%, rgba(140,160,255,.16), transparent 55%);
+  }
+
+  /* ---------- 왼쪽 명단 ---------- */
+  aside{
+    position:relative; z-index:1;
+    background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    padding:20px; display:flex; flex-direction:column; gap:14px; height:calc(100vh - 40px);
+  }
+  aside h2{font-size:15px; letter-spacing:.02em; display:flex; justify-content:space-between; align-items:center}
+  aside h2 span{font-size:12px; color:var(--dim); font-weight:500}
+  textarea{
+    width:100%; height:170px; resize:none; padding:12px; border-radius:11px;
+    background:rgba(0,0,0,.28); border:1px solid var(--line); color:var(--txt);
+    font-family:inherit; font-size:14px; line-height:1.7; outline:none;
+  }
+  textarea:focus{border-color:var(--accent)}
+  .row{display:flex; gap:8px}
+  button{
+    font-family:inherit; font-weight:700; border:none; border-radius:11px;
+    cursor:pointer; transition:transform .12s, box-shadow .12s, background .2s;
+  }
+  button:active{transform:scale(.97)}
+  .btn-sm{
+    flex:1; padding:11px; font-size:13px; font-weight:600;
+    background:rgba(255,255,255,.08); color:#cdd5ff; border:1px solid var(--line);
+  }
+  .btn-sm:hover{background:rgba(255,255,255,.14)}
+  label.check{
+    display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--dim); cursor:pointer;
+  }
+  label.check input{width:17px; height:17px; accent-color:#8ea2ff; cursor:pointer}
+  #pool{
+    flex:1; overflow-y:auto; display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start;
+    padding-top:4px; border-top:1px solid var(--line);
+  }
+  #pool .chip{
+    font-size:12.5px; padding:5px 10px; border-radius:999px;
+    background:rgba(255,255,255,.07); border:1px solid var(--line); color:#c6cdf2;
+  }
+  #pool .chip.done{opacity:.32; text-decoration:line-through}
+
+  /* ---------- 오른쪽 무대 ---------- */
+  main{
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:22px; min-height:calc(100vh - 40px);
+  }
+
+  #shuffle{
+    font-size:clamp(44px, 8vw, 104px); font-weight:900; letter-spacing:-.02em;
+    min-height:1.2em; text-align:center; line-height:1.2;
+    text-shadow:0 0 60px rgba(140,160,255,.5);
+  }
+  #shuffle.idle{color:var(--dim); font-size:clamp(20px,2.6vw,30px); font-weight:700; text-shadow:none}
+
+  #card{
+    width:min(560px, 92vw); border-radius:22px; padding:26px 28px 24px;
+    background:linear-gradient(160deg, rgba(38,44,84,.9), rgba(20,24,48,.9));
+    border:1px solid rgba(255,207,107,.28);
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+    display:none; animation:pop .45s cubic-bezier(.2,1.2,.3,1);
+  }
+  #card.show{display:block}
+  @keyframes pop{from{opacity:0; transform:translateY(26px) scale(.94)} to{opacity:1; transform:none}}
+
+  .stars{font-size:30px; letter-spacing:5px; color:var(--gold); text-align:center}
+  .grade{text-align:center; font-size:13px; color:var(--dim); margin-top:4px; letter-spacing:.16em}
+  .quote{
+    margin:16px 0 18px; text-align:center; font-size:17px; line-height:1.75; color:#f2f4ff;
+  }
+  .quote .twist{display:block; margin-top:8px; font-size:14.5px; color:var(--gold)}
+
+  .lucky{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px}
+  .lucky div{
+    background:rgba(0,0,0,.26); border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; font-size:14px;
+  }
+  .lucky b{display:block; font-size:11.5px; color:var(--dim); font-weight:600; margin-bottom:3px; letter-spacing:.05em}
+
+  .buddy{
+    text-align:center; padding:14px; border-radius:13px; margin-bottom:12px;
+    background:rgba(142,162,255,.12); border:1px solid rgba(142,162,255,.3);
+  }
+  .buddy b{display:block; font-size:11.5px; color:var(--dim); font-weight:600; margin-bottom:5px; letter-spacing:.05em}
+  .buddy span{font-size:24px; font-weight:800; color:#cfd8ff}
+
+  .mission{
+    padding:14px 16px; border-radius:13px; font-size:15.5px; line-height:1.6;
+    background:rgba(255,207,107,.1); border:1px solid rgba(255,207,107,.3); color:#ffe7b8;
+  }
+  .mission b{color:var(--gold); margin-right:8px}
+
+  #controls{display:flex; gap:12px; flex-wrap:wrap; justify-content:center}
+  .btn-main{
+    padding:17px 44px; font-size:19px; color:#fff;
+    background:linear-gradient(135deg,#6f8bff,#a97cff);
+    box-shadow:0 12px 34px rgba(120,140,255,.36);
+  }
+  .btn-main:disabled{opacity:.45; cursor:not-allowed; box-shadow:none}
+  .btn-line{
+    padding:17px 26px; font-size:15px; font-weight:600;
+    background:rgba(255,255,255,.07); color:#cdd5ff; border:1px solid var(--line);
+  }
+  #progress{font-size:13px; color:var(--dim); letter-spacing:.04em}
+
+  @media (max-width:860px){
+    body{grid-template-columns:1fr; padding:14px}
+    aside{height:auto}
+    main{min-height:auto; padding:24px 0}
+  }
+</style>
+</head>
+<body>
+
+<aside>
+  <h2>참가자 명단 <span id="count">0명</span></h2>
+  <textarea id="names" placeholder="이름을 한 줄에 하나씩 붙여넣으세요&#10;쉼표로 구분해도 됩니다"></textarea>
+  <div class="row">
+    <button class="btn-sm" id="apply">명단 적용</button>
+    <button class="btn-sm" id="sample">샘플 넣기</button>
+  </div>
+  <label class="check"><input type="checkbox" id="noRepeat" checked> 한 번 뽑힌 사람 제외</label>
+  <label class="check"><input type="checkbox" id="sound" checked> 효과음</label>
+  <div id="pool"></div>
+</aside>
+
+<main>
+  <div id="shuffle" class="idle">명단을 넣고 뽑기를 눌러주세요</div>
+
+  <div id="card">
+    <div class="stars" id="stars"></div>
+    <div class="grade" id="grade"></div>
+    <div class="quote" id="quote"></div>
+    <div class="lucky">
+      <div><b>행운의 색</b><span id="color"></span></div>
+      <div><b>행운의 자리</b><span id="seat"></span></div>
+    </div>
+    <div class="buddy"><b>오늘의 짝꿍</b><span id="buddy"></span></div>
+    <div class="mission" id="mission"></div>
+  </div>
+
+  <div id="controls">
+    <button class="btn-main" id="draw">오늘의 주인공은?</button>
+    <button class="btn-line" id="reset">기록 초기화</button>
+  </div>
+  <div id="progress"></div>
+</main>
+
+<script>
+/* ============ 운세 데이터 ============ */
+const FORTUNE = {
+  5:{ grade:'대 길', lines:[
+      '막혔던 말문이 트이는 날입니다. 오늘 던진 한마디가 오래 기억됩니다.',
+      '오늘은 무엇을 해도 되는 날. 먼저 손을 드는 쪽이 이깁니다.',
+      '주변이 당신의 말을 기다리고 있습니다. 아끼지 마세요.' ]},
+  4:{ grade:'길', lines:[
+      '말이 술술 풀립니다. 먼저 건네는 인사가 하루를 바꿉니다.',
+      '작은 용기가 큰 인연으로 돌아옵니다.',
+      '오늘 웃은 만큼 좋은 일이 따라붙습니다.' ]},
+  3:{ grade:'평', lines:[
+      '무난한 하루. 다만 한 번쯤은 나서보는 것도 나쁘지 않습니다.',
+      '조용히 있어도 좋고 나서도 좋습니다. 선택은 당신 몫.',
+      '평범해 보이는 오늘이 나중에 꽤 괜찮은 날로 기억됩니다.' ]},
+  2:{ grade:'소 흉', lines:[
+      '말수가 줄어드는 날입니다. 괜한 말은 접어두는 게 좋겠습니다.',
+      '오늘은 조금 서툴러도 되는 날입니다.' ]},
+  1:{ grade:'흉', lines:[
+      '되는 일이 없어 보이는 날입니다.',
+      '오늘은 아무것도 하지 않는 편이 낫겠습니다.' ]}
+};
+
+/* 흉·소흉일 때 붙는 반전 한 줄 */
+const TWIST = [
+  '— 인 줄 알았으나, 오늘 이 자리에 온 것으로 모두 상쇄되었습니다.',
+  '— 라고 나왔지만, 여기 앉아 있는 순간 운세가 새로 쓰였습니다.',
+  '— 였습니다. 다만 이 화면에 이름이 뜬 시점부터 무효입니다.'
+];
+
+const MISSION = {
+  high:[ '짝꿍에게 오늘 첫인상을 한마디로 말해주기',
+         '짝꿍의 이름으로 삼행시 즉석에서 짓기',
+         '짝꿍에게 궁금한 것 하나 물어보기',
+         '오늘 이 자리에서 얻어가고 싶은 것 한 문장으로 말하기' ],
+  mid :[ '짝꿍과 악수하고 이름 한 번씩 부르기',
+         '짝꿍에게 칭찬 한마디 건네기',
+         '짝꿍과 공통점 하나 찾기' ],
+  low :[ '짝꿍과 눈 마주치고 웃어주기',
+         '짝꿍에게 손 한 번 흔들어주기',
+         '아무것도 하지 않아도 됩니다. 대신 박수는 받으세요' ]
+};
+
+const COLORS = ['파랑','연두','주황','보라','노랑','민트','빨강','흰색','남색','분홍'];
+const SEATS  = ['창가 자리','맨 앞줄','가운데','문 쪽','뒷줄 구석','지금 앉은 그 자리'];
+
+/* ============ 상태 ============ */
+let all = [], drawn = [], spinning = false, audioCtx = null;
+
+const $ = id => document.getElementById(id);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+/* ============ 명단 ============ */
+function applyNames(){
+  all = $('names').value.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+  drawn = [];
+  render();
+}
+function render(){
+  $('count').textContent = all.length + '명';
+  $('pool').innerHTML = all
+    .map(n => `<span class="chip${drawn.includes(n) ? ' done' : ''}">${n}</span>`).join('');
+  const left = $('noRepeat').checked ? all.length - drawn.length : all.length;
+  $('draw').disabled = left === 0;
+  $('progress').textContent = all.length
+    ? ($('noRepeat').checked ? `${drawn.length} / ${all.length} 완료` : `총 ${all.length}명`)
+    : '';
+  if ($('noRepeat').checked && all.length && left === 0){
+    $('shuffle').className = 'idle';
+    $('shuffle').textContent = '전원 완료! 기록을 초기화하면 다시 시작합니다';
+  }
+}
+
+/* ============ 소리 (외부 파일 없이 생성) ============ */
+function ac(){
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function drumroll(sec){
+  if (!$('sound').checked) return;
+  const c = ac(), n = c.sampleRate * sec;
+  const buf = c.createBuffer(1, n, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+  const src = c.createBufferSource(); src.buffer = buf;
+  const flt = c.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 420;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.02, c.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.4, c.currentTime + sec * 0.85);
+  g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + sec);
+  src.connect(flt); flt.connect(g); g.connect(c.destination);
+  src.start(); src.stop(c.currentTime + sec);
+}
+function fanfare(){
+  if (!$('sound').checked) return;
+  const c = ac();
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    const t = c.currentTime + i * 0.09;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + 0.55);
+  });
+}
+
+/* ============ 뽑기 ============ */
+function candidates(){
+  return $('noRepeat').checked ? all.filter(n => !drawn.includes(n)) : all.slice();
+}
+
+function draw(){
+  const pool = candidates();
+  if (spinning || !pool.length) return;
+  spinning = true;
+  $('draw').disabled = true;
+  $('card').classList.remove('show');
+  $('shuffle').className = '';
+
+  const DUR = 2000;
+  drumroll(DUR / 1000);
+
+  const start = performance.now();
+  (function spin(now){
+    const p = Math.min((now - start) / DUR, 1);
+    // 뒤로 갈수록 느려지게
+    const gap = 40 + p * p * 260;
+    $('shuffle').textContent = pick(pool);
+    if (p < 1) setTimeout(() => requestAnimationFrame(spin), gap);
+    else finish(pick(pool));
+  })(start);
+}
+
+function finish(winner){
+  spinning = false;
+  $('shuffle').textContent = winner;
+  fanfare();
+  if (!drawn.includes(winner)) drawn.push(winner);
+
+  // 운세 등급 — 좋은 쪽이 더 자주 나오게
+  const roll = Math.random();
+  const star = roll < .18 ? 5 : roll < .50 ? 4 : roll < .78 ? 3 : roll < .93 ? 2 : 1;
+  const f = FORTUNE[star];
+
+  $('stars').textContent = '★'.repeat(star) + '☆'.repeat(5 - star);
+  $('grade').textContent = f.grade;
+  $('quote').innerHTML = pick(f.lines)
+    + (star <= 2 ? `<span class="twist">${pick(TWIST)}</span>` : '');
+  $('color').textContent = pick(COLORS);
+  $('seat').textContent  = pick(SEATS);
+
+  const others = all.filter(n => n !== winner);
+  $('buddy').textContent = others.length ? pick(others) : '오늘은 혼자입니다';
+
+  const tier = star >= 4 ? 'high' : star === 3 ? 'mid' : 'low';
+  $('mission').innerHTML = '<b>미션</b>' + pick(MISSION[tier]);
+
+  $('card').classList.add('show');
+  render();
+}
+
+/* ============ 연결 ============ */
+$('apply').onclick   = applyNames;
+$('reset').onclick   = () => { drawn = []; $('card').classList.remove('show');
+                               $('shuffle').className = 'idle';
+                               $('shuffle').textContent = '기록을 지웠습니다. 다시 뽑아주세요'; render(); };
+$('draw').onclick    = draw;
+$('noRepeat').onchange = render;
+$('sample').onclick  = () => {
+  $('names').value = ['김서준','이지우','박도윤','최하은','정예준','강수아','조민준','윤서연',
+                      '임지호','한다현','오시우','신유나','권태현','황보람','안준서','서지안',
+                      '문채원','배현우','남소율','고은우'].join('\n');
+  applyNames();
+};
+
+render();
+</script>
+</body>
+</html>
