@@ -1,0 +1,575 @@
+<title>말로 만드는 웹페이지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+  :root {
+    --bg: #F3F6F1;
+    --surface: #FFFFFF;
+    --ink: #1D2830;
+    --ink-soft: #55636B;
+    --line: #D7DED6;
+    --led: #E23B2E;
+    --led-dim: #E6E2DC;
+    --blank: #FFE680;
+    --blank-ink: #3B2F00;
+    --extra: #2F6FD6;
+    --extra-soft: #E6EEFB;
+    --ok: #1E8A4C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #151B1F;
+      --surface: #1E262B;
+      --ink: #EEF2EF;
+      --ink-soft: #A7B3B8;
+      --line: #334047;
+      --led: #FF5A4B;
+      --led-dim: #2C3539;
+      --blank: #6B5A12;
+      --blank-ink: #FFF3C4;
+      --extra: #7FA9F0;
+      --extra-soft: #1E2B40;
+      --ok: #5BCB8A;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #151B1F;
+    --surface: #1E262B;
+    --ink: #EEF2EF;
+    --ink-soft: #A7B3B8;
+    --line: #334047;
+    --led: #FF5A4B;
+    --led-dim: #2C3539;
+    --blank: #6B5A12;
+    --blank-ink: #FFF3C4;
+    --extra: #7FA9F0;
+    --extra-soft: #1E2B40;
+    --ok: #5BCB8A;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 16px;
+    padding-block: 32px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  h1, h2, h3 {
+    font-family: "Jua", "Gowun Dodum", "Malgun Gothic", sans-serif;
+    font-weight: 400;
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  /* 머리말 */
+  header { display: flex; gap: 20px; align-items: center; }
+  .leds {
+    display: grid;
+    grid-template-columns: repeat(5, 12px);
+    gap: 5px;
+    padding: 12px;
+    background: var(--ink);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .leds i { width: 12px; height: 12px; border-radius: 50%; background: #3A454B; }
+  .leds i.on { background: #FF4636; box-shadow: 0 0 6px #FF4636; }
+  header h1 { font-size: 34px; }
+  header p { margin: 4px 0 0; color: var(--ink-soft); }
+
+  .how {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+  .how li {
+    counter-increment: step;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .how li::before {
+    content: counter(step);
+    display: inline-grid;
+    place-items: center;
+    width: 26px; height: 26px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--led);
+    color: #fff;
+    font-family: "Jua", sans-serif;
+    font-size: 15px;
+  }
+  .how .mark {
+    background: var(--blank);
+    color: var(--blank-ink);
+    padding: 0 4px;
+    border-radius: 4px;
+  }
+  .rule {
+    margin: -24px 0 0;
+    font-size: 16px;
+    color: var(--ink-soft);
+  }
+  .rule strong { color: var(--ink); }
+
+  /* 활동 */
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .tag {
+    align-self: flex-start;
+    font-family: "Jua", sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--led);
+    color: #fff;
+  }
+  .extra .tag { background: var(--extra); }
+  section h2 { font-size: 30px; }
+  section > p.lead { margin: -8px 0 0; color: var(--ink-soft); }
+
+  .prompt-card {
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .extra .prompt-card { border-color: var(--extra); }
+  .prompt {
+    white-space: pre-wrap;
+    padding: 20px 22px;
+    font-size: 19px;
+    line-height: 2;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .blank {
+    background: var(--blank);
+    color: var(--blank-ink);
+    border-radius: 6px;
+    padding: 2px 4px;
+    outline: none;
+    cursor: text;
+    font-weight: 700;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .blank::before { content: "[ "; opacity: .55; font-weight: 400; }
+  .blank::after { content: " ]"; opacity: .55; font-weight: 400; }
+  .blank:empty::before { content: "[ 여기에 쓰기"; }
+  .blank:hover { box-shadow: 0 0 0 2px var(--blank); }
+  .blank:focus { box-shadow: 0 0 0 3px var(--ink); }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 12px;
+  }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .copy {
+    font-family: "Jua", sans-serif;
+    font-size: 21px;
+    padding: 10px 26px;
+    border: none;
+    background: var(--led);
+    color: #fff;
+  }
+  .extra .copy { background: var(--extra); }
+  .copy.done { background: var(--ok); }
+  .reset {
+    font-size: 15px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+  }
+  .add {
+    font-family: "Jua", sans-serif;
+    font-size: 17px;
+    padding: 9px 16px;
+    border: 2px solid var(--led);
+    background: var(--surface);
+    color: var(--led);
+  }
+  .add:disabled { opacity: .4; cursor: default; }
+  .del {
+    display: inline-grid;
+    place-items: center;
+    width: 26px; height: 26px;
+    margin-left: 8px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--ink-soft);
+    vertical-align: middle;
+    line-height: 1;
+  }
+  .del::before { content: "✕"; font-size: 13px; }
+  .del:hover { color: var(--led); border-color: var(--led); }
+  .q.new .qnum { color: var(--led); font-weight: 700; }
+  .bar .hint { font-size: 15px; color: var(--ink-soft); margin-left: auto; }
+
+  /* 고쳐 말하기 */
+  .fix h3 { font-size: 21px; }
+  .fix p { margin: 2px 0 10px; font-size: 16px; color: var(--ink-soft); }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    font-size: 17px;
+    padding: 10px 16px;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px dashed var(--ink-soft);
+    text-align: left;
+  }
+  .chip:hover { border-style: solid; }
+  .chip.done { border: 1px solid var(--ok); color: var(--ok); }
+
+  /* 엑스트라 */
+  .extra {
+    background: var(--extra-soft);
+    border-radius: 20px;
+    padding: 24px 20px;
+  }
+  .extra .chip { background: var(--surface); }
+  .play {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    font-size: 17px;
+  }
+  .play .die {
+    display: grid;
+    grid-template-columns: repeat(3, 8px);
+    gap: 4px;
+    padding: 8px;
+    background: var(--ink);
+    border-radius: 8px;
+  }
+  .play .die i { width: 8px; height: 8px; border-radius: 50%; background: transparent; }
+  .play .die i.on { background: #FF4636; }
+  .play .arrow { color: var(--ink-soft); }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 20px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: "Jua", sans-serif;
+    font-size: 18px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    max-width: calc(100% - 32px);
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 620px) {
+    body { font-size: 17px; }
+    header h1 { font-size: 28px; }
+    .how { grid-template-columns: 1fr; }
+    .prompt { font-size: 17px; padding: 16px; }
+    .bar .hint { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast { transition: none; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="leds" aria-hidden="true">
+      <i></i><i class="on"></i><i></i><i class="on"></i><i></i>
+      <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+      <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+      <i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i>
+      <i></i><i></i><i class="on"></i><i></i><i></i>
+    </div>
+    <div>
+      <h1>말로 만드는 웹페이지</h1>
+      <p>Gemini에게 말로 부탁해서 나만의 웹페이지를 만들어요.</p>
+    </div>
+  </header>
+
+  <ol class="how">
+    <li><span class="mark">노란 칸</span>을 눌러서 내 이야기로 바꿔요.</li>
+    <li><b>복사하기</b> 버튼을 눌러요.</li>
+    <li>Gemini에서 <b>캔버스</b>를 켜고 붙여 넣어요.</li>
+  </ol>
+  <p class="rule"><strong>약속</strong> · 진짜 이름 대신 <strong>별명</strong>을 써요. 학교 이름, 사는 곳은 쓰지 않아요.</p>
+
+  <!-- 활동 2 -->
+  <section id="quiz">
+    <span class="tag">활동 2</span>
+    <h2>나에 대한 퀴즈</h2>
+    <p class="lead">친구들이 나를 얼마나 알까요? 나에 대한 문제 3개를 내 봐요.</p>
+
+    <div class="prompt-card">
+      <div class="prompt" id="quiz-prompt">나에 대한 퀴즈 웹페이지를 만들어 줘.
+
+제목은 "<span class="blank" contenteditable="true" spellcheck="false" data-ex="초코곰">초코곰</span>의 퀴즈"로 해 줘.
+
+문제는 <span id="qcount">3</span>개야.
+<span id="qlist"><span class="q"><span class="qnum">1</span>. <span class="blank" contenteditable="true" spellcheck="false" data-ex="내가 제일 좋아하는 음식은?">내가 제일 좋아하는 음식은?</span> 정답: <span class="blank" contenteditable="true" spellcheck="false" data-ex="떡볶이">떡볶이</span><button class="del" type="button" aria-label="이 문제 지우기" title="이 문제 지우기"></button>
+</span><span class="q"><span class="qnum">2</span>. <span class="blank" contenteditable="true" spellcheck="false" data-ex="내가 제일 좋아하는 색깔은?">내가 제일 좋아하는 색깔은?</span> 정답: <span class="blank" contenteditable="true" spellcheck="false" data-ex="파란색">파란색</span><button class="del" type="button" aria-label="이 문제 지우기" title="이 문제 지우기"></button>
+</span><span class="q"><span class="qnum">3</span>. <span class="blank" contenteditable="true" spellcheck="false" data-ex="내가 쉬는 시간에 제일 많이 하는 것은?">내가 쉬는 시간에 제일 많이 하는 것은?</span> 정답: <span class="blank" contenteditable="true" spellcheck="false" data-ex="친구랑 공기놀이">친구랑 공기놀이</span><button class="del" type="button" aria-label="이 문제 지우기" title="이 문제 지우기"></button>
+</span></span>
+문제마다 보기를 3개씩 보여 주고, 버튼을 눌러서 고르게 해 줘.
+맞히면 "<span class="blank" contenteditable="true" spellcheck="false" data-ex="딩동댕! 역시 내 친구!">딩동댕! 역시 내 친구!</span>" 하고 칭찬해 주고, 틀리면 다시 풀게 해 줘.
+다 풀면 점수를 보여 줘.
+
+배경은 <span class="blank" contenteditable="true" spellcheck="false" data-ex="우주">우주</span> 느낌으로 예쁘게 꾸며 줘.</div>
+      <div class="bar">
+        <button class="copy" type="button" data-target="quiz-prompt">복사하기</button>
+        <button class="add" type="button" id="add-q">+ 문제 추가하기</button>
+        <button class="reset" type="button" data-target="quiz-prompt">예시로 되돌리기</button>
+        <span class="hint">문제도 정답도 바꿀 수 있어요</span>
+      </div>
+    </div>
+
+    <div class="fix">
+      <h3>고쳐 말하기</h3>
+      <p>페이지가 나왔나요? 한 번에 하나씩 더 부탁해 봐요. 눌러서 복사하거나, 마이크로 직접 말해도 돼요.</p>
+      <div class="chips">
+        <button class="chip" type="button">버튼을 더 크게 해 줘.</button>
+        <button class="chip" type="button">맞히면 폭죽이 터지게 해 줘.</button>
+        <button class="chip" type="button">글씨를 더 귀여운 모양으로 바꿔 줘.</button>
+        <button class="chip" type="button">보기 순서를 섞어 줘.</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 엑스트라 -->
+  <section class="extra" id="fortune">
+    <span class="tag">퀴즈를 다 만든 친구</span>
+    <h2>운세 주사위</h2>
+    <p class="lead">주사위를 굴리면 오늘의 운세가 나오는 페이지를 만들어요.</p>
+
+    <div class="play" aria-label="노는 방법">
+      <span class="die" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i></span>
+      <span>주사위 굴리기</span>
+      <span class="arrow">→</span>
+      <span>데굴데굴 숫자가 나와요</span>
+      <span class="arrow">→</span>
+      <span>그 숫자의 운세 확인!</span>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt" id="fortune-prompt">운세 주사위 웹페이지를 만들어 줘.
+
+제목은 "<span class="blank" contenteditable="true" spellcheck="false" data-ex="초코곰">초코곰</span>의 오늘의 운세"로 해 줘.
+
+가운데에 큰 주사위를 보여 주고, "주사위 굴리기" 버튼을 만들어 줘.
+버튼을 누르면 주사위가 데굴데굴 굴러가다가 1부터 6 중에 하나가 나오게 해 줘.
+그리고 나온 숫자의 운세를 크게 보여 줘.
+
+1번: <span class="blank" contenteditable="true" spellcheck="false" data-ex="오늘은 급식이 맛있는 날!">오늘은 급식이 맛있는 날!</span>
+2번: <span class="blank" contenteditable="true" spellcheck="false" data-ex="친구에게 칭찬받는 날!">친구에게 칭찬받는 날!</span>
+3번: <span class="blank" contenteditable="true" spellcheck="false" data-ex="숙제가 쉽게 끝나는 날!">숙제가 쉽게 끝나는 날!</span>
+4번: <span class="blank" contenteditable="true" spellcheck="false" data-ex="새 친구를 사귀는 날!">새 친구를 사귀는 날!</span>
+5번: <span class="blank" contenteditable="true" spellcheck="false" data-ex="체육 시간에 활약하는 날!">체육 시간에 활약하는 날!</span>
+6번: <span class="blank" contenteditable="true" spellcheck="false" data-ex="웃을 일이 가득한 날!">웃을 일이 가득한 날!</span>
+
+운세가 나올 때 <span class="blank" contenteditable="true" spellcheck="false" data-ex="반짝반짝">반짝반짝</span> 효과를 넣어 줘.
+배경은 <span class="blank" contenteditable="true" spellcheck="false" data-ex="밤하늘">밤하늘</span> 느낌으로 예쁘게 꾸며 줘.</div>
+      <div class="bar">
+        <button class="copy" type="button" data-target="fortune-prompt">복사하기</button>
+        <button class="reset" type="button" data-target="fortune-prompt">예시로 되돌리기</button>
+        <span class="hint">운세는 친구가 기분 좋아지는 말로!</span>
+      </div>
+    </div>
+
+    <div class="fix">
+      <h3>고쳐 말하기</h3>
+      <div class="chips">
+        <button class="chip" type="button">주사위를 더 오래 굴러가게 해 줘.</button>
+        <button class="chip" type="button">운세마다 어울리는 그림을 넣어 줘.</button>
+        <button class="chip" type="button">주사위 색깔을 빨간색으로 바꿔 줘.</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function selectNode(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  async function copyText(text, fallbackEl) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      if (fallbackEl) selectNode(fallbackEl);
+      try { return document.execCommand('copy'); } catch (err) { return false; }
+    }
+  }
+
+  function flash(btn, label) {
+    const original = btn.dataset.label || btn.textContent;
+    btn.dataset.label = original;
+    btn.classList.add('done');
+    if (label) btn.textContent = label;
+    setTimeout(() => {
+      btn.classList.remove('done');
+      btn.textContent = original;
+    }, 1600);
+  }
+
+  document.querySelectorAll('.copy').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const box = document.getElementById(btn.dataset.target);
+      const text = box.innerText.trim();
+      const ok = await copyText(text, box);
+      if (ok) {
+        flash(btn, '복사했어요!');
+        showToast('Gemini에 붙여 넣으세요 (Ctrl + V)');
+      } else {
+        selectNode(box);
+        showToast('글이 선택됐어요. Ctrl + C를 눌러 복사하세요');
+      }
+    });
+  });
+
+  // 퀴즈 문제 추가·지우기
+  const qlist = document.getElementById('qlist');
+  const qcount = document.getElementById('qcount');
+  const addBtn = document.getElementById('add-q');
+  const qOriginal = qlist.innerHTML;
+  const MAX_Q = 6;
+  const extraQs = [
+    ['내가 키우고 싶은 동물은?', '강아지'],
+    ['내가 제일 좋아하는 과목은?', '체육'],
+    ['내가 가 보고 싶은 곳은?', '바닷속 수족관'],
+    ['내가 제일 잘하는 것은?', '줄넘기']
+  ];
+
+  function blankHTML(text) {
+    return '<span class="blank" contenteditable="true" spellcheck="false" data-ex="' + text + '">' + text + '</span>';
+  }
+
+  function renumber() {
+    const items = qlist.querySelectorAll('.q');
+    items.forEach((q, i) => { q.querySelector('.qnum').textContent = i + 1; });
+    qcount.textContent = items.length;
+    addBtn.disabled = items.length >= MAX_Q;
+    qlist.querySelectorAll('.del').forEach(d => { d.hidden = items.length <= 1; });
+  }
+
+  addBtn.addEventListener('click', () => {
+    const n = qlist.querySelectorAll('.q').length;
+    if (n >= MAX_Q) return;
+    const used = Array.from(qlist.querySelectorAll('.q')).map(q => q.querySelector('.blank').textContent);
+    const pick = extraQs.find(([q]) => !used.includes(q)) || ['내가 좋아하는 것은?', '여기에 정답'];
+    const q = document.createElement('span');
+    q.className = 'q new';
+    q.innerHTML = '<span class="qnum"></span>. ' + blankHTML(pick[0]) + ' 정답: ' + blankHTML(pick[1]) +
+      '<button class="del" type="button" aria-label="이 문제 지우기" title="이 문제 지우기"></button>\n';
+    qlist.appendChild(q);
+    renumber();
+    const first = q.querySelector('.blank');
+    first.focus();
+    showToast('문제를 추가했어요. 노란 칸을 바꿔 보세요');
+  });
+
+  qlist.addEventListener('click', e => {
+    const del = e.target.closest('.del');
+    if (!del) return;
+    if (qlist.querySelectorAll('.q').length <= 1) return;
+    del.closest('.q').remove();
+    renumber();
+    showToast('문제를 지웠어요');
+  });
+
+  renumber();
+
+  document.querySelectorAll('.reset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const box = document.getElementById(btn.dataset.target);
+      if (box.contains(qlist)) { qlist.innerHTML = qOriginal; renumber(); }
+      box.querySelectorAll('.blank').forEach(b => { b.textContent = b.dataset.ex; });
+      showToast('예시로 되돌렸어요');
+    });
+  });
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', async () => {
+      const ok = await copyText(chip.textContent.trim(), chip);
+      if (ok) {
+        flash(chip);
+        showToast('복사했어요! Gemini에 붙여 넣으세요');
+      } else {
+        showToast('글을 직접 보고 입력해 주세요');
+      }
+    });
+  });
+
+  // 노란 칸: 새로 추가된 칸에도 적용되도록 위임 처리
+  document.addEventListener('keydown', e => {
+    if (e.target.classList && e.target.classList.contains('blank') && e.key === 'Enter') {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+  document.addEventListener('paste', e => {
+    if (!(e.target.closest && e.target.closest('.blank'))) return;
+    e.preventDefault();
+    const t = (e.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ');
+    document.execCommand('insertText', false, t);
+  });
+  document.addEventListener('focusin', e => {
+    const b = e.target;
+    if (b.classList && b.classList.contains('blank') && b.textContent === b.dataset.ex) selectNode(b);
+  });
+</script>
