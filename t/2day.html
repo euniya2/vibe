@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DAY 2 | AI 의사결정 1PAGE 만들기</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#f6f6f9; --card:#fff; --ink:#1c1b22; --dim:#5d5b68;
+    --line:#e4e3ea; --code:#f3f2f7;
+    --accent:#3b3577; --accent2:#6e5fb0; --red:#c8323f; --teal:#23807f;
+    --grad:linear-gradient(90deg,#da3c48 0%,#d8539a 32%,#8a7cc0 64%,#7b9ecf 82%,#5ab8b7 100%);
+    --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif;
+    --mono:"D2Coding",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.72;font-size:16px;letter-spacing:-0.011em;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+
+  .topline{height:6px;background:var(--grad)}
+  header{background:var(--accent);color:#fff;padding:22px 20px}
+  header h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em}
+
+  nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 0;z-index:10}
+  nav>.wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  nav>.urlbar{max-width:900px;margin:0 auto 9px;padding:0 20px 9px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px dashed var(--line)}
+  .urlbar .label{font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:3px 9px;border-radius:4px;align-self:center}
+  .urlbar .addr{font-size:19px;font-weight:700;color:var(--red)}
+  nav .day{font-size:12.5px;font-weight:700;color:var(--dim);margin:0 2px 0 8px}
+  nav a{display:inline-block;padding:6px 12px;border-radius:20px;font-size:13.5px;color:var(--accent);text-decoration:none;background:var(--code)}
+  nav a:hover{background:#e7e4f3}
+  nav a.on{background:var(--accent);color:#fff;font-weight:700}
+
+  .page{display:none;padding-bottom:30px}
+  .page.on{display:block}
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin:18px 0}
+  h2{font-size:20px;margin:0 0 4px;color:var(--accent);font-weight:700;letter-spacing:-0.02em}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 14px}
+  h3{font-size:16px;margin:20px 0 6px;font-weight:700}
+  h3 small{font-weight:400;color:var(--dim);font-size:13px}
+  .badge{display:inline-block;color:#fff;font-size:12.5px;padding:2px 9px;border-radius:4px;margin-right:7px;vertical-align:2px;background:var(--accent2)}
+
+  .box{position:relative;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:14px;margin:10px 0}
+  pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:13.5px;line-height:1.62;letter-spacing:0}
+  .copy{position:absolute;top:8px;right:8px;border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:6px;padding:4px 12px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .copy:hover{background:var(--accent);color:#fff}
+  .copy.done{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+  .wait{border:1.5px dashed var(--accent2);background:#fbfaff;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:14.5px}
+  .note{border-left:3px solid var(--accent2);background:#f3f1fa;padding:10px 14px;margin:12px 0;font-size:14.5px;border-radius:0 6px 6px 0}
+  .warn{border-left:3px solid var(--red);background:#fdf0f1;padding:10px 14px;margin:12px 0;font-size:14.5px;border-radius:0 6px 6px 0}
+
+  .steps{counter-reset:step;display:grid;gap:8px;margin:12px 0}
+  .steps div{position:relative;padding:10px 12px 10px 42px;background:#fbfbfd;border:1px solid var(--line);border-radius:8px;font-size:15px}
+  .steps div:before{counter-increment:step;content:counter(step);position:absolute;left:12px;top:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:11px;font-weight:700}
+
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+  .cardbox{border:1px solid var(--line);border-radius:9px;padding:14px;background:#fbfbfd;font-size:14.5px}
+  .cardbox b{display:block;color:var(--accent);font-size:15px;margin-bottom:4px}
+  @media(max-width:650px){.grid{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:var(--code);font-weight:700}
+  @media(max-width:650px){table{display:block;overflow-x:auto;white-space:nowrap}}
+
+  .write{width:100%;min-height:84px;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#fff;color:var(--ink)}
+  .ask{font-size:16.5px;font-weight:700;color:var(--accent);margin:14px 0 6px}
+
+  .pager{display:flex;justify-content:space-between;gap:10px;margin-top:8px}
+  .btn{display:inline-block;background:var(--accent);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-size:14.5px;cursor:pointer;text-decoration:none}
+  .btn:hover{background:var(--accent2)}
+  .btn.ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+
+  footer{color:var(--dim);font-size:13px;text-align:center;padding:24px 20px}
+  @media print{nav{display:none}body{background:#fff}.copy,.pager{display:none}.page{display:block}}
+
+  .field{margin:16px 0}
+  .flabel{font-weight:700;font-size:16px;margin:0 0 6px;color:var(--ink)}
+  .flabel small{font-weight:400;color:var(--dim);font-size:13.5px;margin-left:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 13px;font-size:15px;cursor:pointer;user-select:none;line-height:1.4;text-align:left;font-family:inherit;color:var(--ink)}
+  .chip:hover{border-color:var(--accent2)}
+  .chip.on{border-color:var(--accent);background:#efecf8;color:var(--accent);font-weight:700}
+  .chip .d{display:block;font-weight:400;color:var(--dim);font-size:13px;margin-top:3px}
+  .chip.wide{flex:1 1 100%}
+  .line{width:100%;font:inherit;font-size:15.5px;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;background:#fff}
+  .line:focus,.edit:focus{outline:none;border-color:var(--accent2)}
+  .preview{background:#fff;border:1.5px solid var(--accent2);border-radius:10px;padding:16px;margin:12px 0;position:relative}
+  .preview pre{font-family:var(--sans);font-size:15px;line-height:1.75}
+  .preview mark{background:#efecf8;color:var(--accent);font-weight:700;border-radius:3px;padding:0 2px}
+  .preview mark.mine{background:#fde8ea;color:var(--red)}
+  .ptitle{font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:6px}
+  .bigcopy{display:block;width:100%;margin-top:12px;background:var(--red);color:#fff;border:0;border-radius:8px;padding:13px;font:inherit;font-size:17px;font-weight:700;cursor:pointer}
+  .bigcopy:hover{filter:brightness(1.08)}
+  .bigcopy.done{background:var(--teal)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .mini{border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:6px;padding:5px 11px;font:inherit;font-size:13.5px;cursor:pointer}
+  .edit{width:100%;min-height:180px;font:inherit;font-size:15px;line-height:1.7;border:1.5px solid var(--red);border-radius:8px;padding:12px;background:#fffafa;margin-top:8px}
+  .diff{font-size:14px;background:#fdf0f1;border-radius:8px;padding:10px 12px;margin-top:8px}
+  .diff del{color:#999}
+  .diff ins{text-decoration:none;background:#fde0e3;color:var(--red);font-weight:700}
+  .legend{font-size:13px;color:var(--dim);margin-top:6px}
+  .legend mark{background:#efecf8;color:var(--accent);font-weight:700;padding:0 3px;border-radius:3px}
+  .legend mark.mine{background:#fde8ea;color:var(--red)}
+  .agenda{border:1px solid var(--line);border-radius:9px;background:#fbfbfd;padding:12px 14px;margin-top:8px;font-size:14.5px}
+  .agenda b{color:var(--accent)}
+  .sortcard{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:8px 0;background:#fff;font-size:15.5px;flex-wrap:wrap}
+  .sortcard .opts{display:flex;gap:6px}
+  .sortcard .res{font-size:13.5px;font-weight:700;width:100%}
+  .sortcard .res.ok{color:var(--teal)} .sortcard .res.no{color:var(--red)}
+  .rec{border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin:10px 0;background:#fff}
+  .rec h4{margin:0 0 6px;color:var(--accent);font-size:15.5px}
+  .rec .k{color:var(--dim);font-size:13.5px}
+  .rec pre{background:var(--code);border-radius:6px;padding:10px;font-family:var(--sans);font-size:14px;margin-top:6px}
+  .empty{color:var(--dim);font-size:14.5px}
+  @media print{header,footer,nav{display:none}.page{display:none!important}.page.on{display:block!important}.tools,.bigcopy,.pager{display:none!important}}
+
+  body{word-break:keep-all;overflow-wrap:break-word}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px}
+  .stat .n{font-size:30px;font-weight:800;color:var(--accent);letter-spacing:-.5px}
+  .stat .l{font-size:14px;color:var(--dim);margin-top:4px;line-height:1.5}
+  .src{font-size:12.5px;color:var(--dim);margin:6px 0 18px}
+  .flow5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+  .flow5 div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.5}
+  .flow5 div b{display:block;color:var(--accent);font-size:15.5px;margin-bottom:4px}
+  .flow5 div small{display:block;color:var(--dim);font-size:13px;margin-top:4px}
+  .flow5 div.today{border:2px solid var(--red)}
+  .flow5 div.today b{color:var(--red)}
+  @media(max-width:720px){.flow5{grid-template-columns:1fr 1fr}}
+  table.t{width:100%;border-collapse:collapse;background:#fff;font-size:14.5px;margin:10px 0}
+  table.t th,table.t td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top}
+  table.t th{background:#f3f2f7;font-weight:700}
+  .cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:12px 0}
+  .case{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14.5px;line-height:1.55}
+  .case b{color:var(--accent)} .case .k{display:block;color:var(--red);font-weight:800;font-size:17px;margin-top:4px}
+  .case.alt{border:2px dashed var(--accent2)}
+  .big{font-size:19px;font-weight:800;color:var(--accent);line-height:1.5;margin:14px 0}
+  .tnote{background:#fff8e6;border:1.5px solid #e9b949;border-radius:10px;padding:10px 13px;margin:12px 0;font-size:14px;line-height:1.65}
+  .tnote>b:first-child{display:inline-block;background:#e9b949;color:#fff;border-radius:5px;padding:1px 7px;margin-right:6px;font-size:12.5px}
+  .split{display:flex;gap:6px;margin:10px 0;max-width:520px}
+  .split div{flex:1;border:2px solid var(--accent2);border-radius:8px;height:92px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;background:#fff}
+  .split div:last-child{border-color:var(--teal)}
+  .paste{width:100%;min-height:110px;font:inherit;font-size:14px;border:1.5px dashed var(--accent2);border-radius:8px;padding:10px;background:#fbfaff}
+  .subfield{margin-left:18px;padding-left:14px;border-left:3px solid var(--line)}
+  .exrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:7px;font-size:13px}.exrow span{color:var(--dim);font-weight:700;margin-right:2px}
+  .exchip{border:1px dashed var(--line);background:#fafafa;border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}.exchip:hover{border-color:var(--accent2,#6e5fb0)}
+  .pastebox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:14px 0}
+  .pastebox h4{margin:0 0 6px;font-size:15.5px;color:var(--accent)}
+  .ok{color:var(--teal);font-weight:700;font-size:14px}
+  table.ws{width:100%;border-collapse:collapse;background:#fff;font-size:14.5px;margin:10px 0}
+  table.ws th,table.ws td{border:1px solid var(--line);padding:6px 7px;text-align:center}
+  table.ws td.tn{text-align:left;font-weight:600}
+  table.ws th{background:#f3f2f7;font-size:13px}
+  .mk{border:1.5px solid var(--line);background:#fff;border-radius:50%;width:30px;height:30px;font:inherit;font-size:14px;cursor:pointer;margin:1px;color:var(--ink)}
+  .mk.on{border:2.5px solid var(--red);color:var(--red);font-weight:800;background:#fff5f6}
+  .mk.ai{border-color:var(--accent2);background:#efecf8;color:var(--accent);font-weight:800}
+  td.dim{color:#bbb}
+  .circ{display:inline-block;border:2px solid var(--red);border-radius:50%;padding:0 6px;color:var(--red);font-weight:800}
+  .hint{background:#f1f8f7;border:1px solid #bfdedd;border-radius:10px;padding:10px 13px;font-size:14.5px;margin:12px 0;line-height:1.6}
+  .hint b{color:var(--teal)}
+  .gptfinal{white-space:pre-wrap;background:var(--code);border-radius:8px;padding:10px;font-size:14px}
+  /* 강사 패널 */
+  #pbtn{position:fixed;right:14px;bottom:14px;z-index:50;background:var(--accent);color:#fff;border:0;border-radius:24px;padding:12px 18px;font:inherit;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}
+  #panel{position:fixed;top:0;right:0;height:100vh;width:min(440px,94vw);background:#fff;z-index:60;box-shadow:-6px 0 24px rgba(0,0,0,.18);transform:translateX(105%);transition:transform .2s;overflow:auto;padding:16px 16px 40px}
+  #panel.on{transform:none}
+  #panel h3{margin:4px 0 8px;color:var(--accent)}
+  #panel .x{float:right;border:0;background:none;font-size:22px;cursor:pointer}
+  .ptab{display:flex;gap:6px;margin:8px 0}
+  .ptab button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:8px;font:inherit;font-weight:700;cursor:pointer}
+  .ptab button.on{border-color:var(--accent);background:#efecf8;color:var(--accent)}
+  .bars{display:flex;gap:6px;margin:8px 0}
+  .bars div{flex:1;border-radius:8px;padding:8px;text-align:center;font-size:13px;background:#f3f2f7}
+  .bars div b{display:block;font-size:22px}
+  .reco{border:2px solid var(--red);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14.5px;line-height:1.6}
+  .say{background:#fff8e6;border-radius:8px;padding:9px 11px;font-size:14.5px;margin:8px 0}
+  @media print{#pbtn,#panel,.tnote,.paste,.pastebox textarea{display:none!important}}
+.whyex{margin-top:4px;background:#fff;border:1px solid #e6d8a8;border-radius:10px;padding:8px 12px}.whyex summary{cursor:pointer;font-weight:700;color:#7a5a00}.whybody p{margin:6px 0;line-height:1.6;word-break:keep-all}.whychk{color:#b3402f}.whychk2{color:var(--dim);font-size:13px}</style></head><body>
+<div class="topline"></div><header><div class="wrap"><h1>DAY 2 | AI 의사결정 1PAGE 만들기</h1></div></header>
+<nav><div class="urlbar"><span class="label">실습 페이지</span><span class="addr">bit.ly/aiday02</span></div><div class="wrap" id="menu"><a href="#start">시작</a><a href="#p1">1 안건</a><a href="#p2">2 그냥 묻기</a><a href="#p3">3 맥락 넣기</a><a href="#p4">4 내가 고르기</a><a href="#p5">5 반대편 점검</a><a href="#p6">6 1PAGE</a><a href="#record">내 기록</a></div></nav>
+<div class="wrap"><div class="page" id="start"><section><h2>오늘 할 일</h2>
+<p class="sub">직책자 AI 모닝클래스 | 둘째 날</p>
+<div class="big">AI는 선택지를 넓히고, 결정은 직책자가 합니다.</div>
+<div class="flow5"><div><b>1일차</b>AI 관점<small>우리 팀 AI 업무분류표</small></div><div class="today"><b>2일차 (오늘)</b>의사결정<small>AI 의사결정 1PAGE</small></div><div><b>3일차</b>대시보드 ①</div><div><b>4일차</b>대시보드 ②</div><div><b>5일차</b>코칭.피드백<small>30일 Action Plan</small></div></div><div class="grid">
+<div class="cardbox"><b>도구</b>기관이 준 <b>ChatGPT Edu</b> 계정 (개인 계정 아님)</div>
+<div class="cardbox"><b>오늘의 결과물</b>AI 의사결정 1PAGE (최종 결정 칸은 내가 채웁니다)</div>
+</div>
+<h3>오늘의 순서</h3>
+<div class="steps"><div>우리 팀 안건 카드 하나를 고릅니다</div><div>ChatGPT <b>새 채팅</b>에서 안건을 한 줄로만 물어봅니다 (3단계부터는 이 채팅에서 이어서 합니다)</div><div>상황, 목표, 제약, 판단기준을 넣어 다시 묻고 대안 3개를 받습니다</div><div>대안 가운데 <b>내가</b> 하나를 고릅니다</div><div>고른 대안을 반대편 눈으로 점검합니다</div><div>1PAGE로 정리합니다</div></div>
+<h3>화면을 반으로 나누면 편합니다</h3>
+<div class="split"><div>이 실습 페이지<br><b>Windows 키 + ←</b></div><div>ChatGPT<br><b>Windows 키 + →</b></div></div>
+<p class="sub">창을 클릭한 뒤 Windows 키를 누른 채 화살표를 누르면 화면 절반에 붙습니다.</p>
+<div class="note">상황, 목표, 제약은 안건 카드에 이미 들어 있습니다. 여러분은 <b>판단기준</b>과 <b>선택</b>만 하시면 됩니다.</div>
+<div class="warn">우리 팀 안건을 직접 쓸 때도 내부 숫자, 실명, 고객정보는 쓰지 않습니다.</div>
+<div class="pager"><span></span><a class="btn" href="#p1">실습 1 →</a></div></section></div><div class="page" id="p1"><section><h2><span class="badge">1</span>안건 고르기</h2><p class="sub">이 페이지에서만 고릅니다. 아직 ChatGPT에 붙여넣지 않습니다</p><div class="steps"><div>우리 팀을 고르면 우리 팀 안건 카드 2개가 나옵니다</div><div>카드 하나를 고르면 상황, 목표, 제약이 보입니다</div><div>우리 팀 안건이 따로 있으면 직접 씁니다. 안건 한 줄과 상황, 목표, 제약을 칸마다 씁니다</div></div><div id="fields-p1"></div><div class="pager"><a class="btn ghost" href="#start">← 시작</a><a class="btn" href="#p2">실습 2 그냥 묻기 →</a></div></section></div><div class="page" id="p2"><section><h2><span class="badge">2</span>그냥 묻기</h2><p class="sub"><b>ChatGPT 새 채팅</b>에서 합니다. 안건을 한 줄로만 물어봅니다</p><div class="steps"><div>[복사]를 누르고 ChatGPT <b>새 채팅</b>에 붙여넣습니다</div><div>답을 읽으며 아래 세 가지를 찾아봅니다</div><div>채팅은 닫지 않습니다. 3단계는 <b>이 채팅에서 이어서</b> 합니다</div></div><div class="box"><button class="copy" type="button" id="copy-p2">복사</button><pre id="q-p2">(1단계에서 안건을 고르면 여기에 한 줄 질문이 나타납니다)</pre></div>
+<h3>답을 읽으며 찾을 것 세 가지</h3><div class="steps"><div>어느 회사에나 맞는 <b>일반론</b>인가?</div><div><b>우리 회사 사정</b>이 들어 있는가?</div><div>AI가 <b>결론을 바로</b> 내리는가?</div></div><div class="wait">⏳ 찾은 것을 기억해 두세요. 3단계 결과와 비교합니다.</div><div class="pager"><a class="btn ghost" href="#p1">← 실습 1 안건</a><a class="btn" href="#p3">실습 3 맥락 넣기 →</a></div></section></div><div class="page" id="p3"><section><h2><span class="badge">3</span>맥락 넣어 다시 묻기</h2><p class="sub"><b>2단계 채팅에서 이어서</b> 합니다</p><div class="steps"><div>판단기준 2개를 고릅니다 (상황, 목표, 제약은 안건 카드에서 자동으로 들어갑니다)</div><div>[프롬프트 복사]를 누르고 2단계 채팅에 <b>이어서</b> 붙여넣습니다</div><div>결과 표를 아래에 붙여넣으면 4단계에 대안이 나타납니다</div></div><div id="p3presets"></div><div id="fields-p3"></div>
+  <div class="preview" id="pv-p3">
+    <div class="ptitle">최종 프롬프트 미리보기 (고르거나 쓴 내용이 바로 들어갑니다)</div>
+    <pre></pre>
+    <div class="legend"><mark>보라색</mark> 내가 고른 것 &nbsp; <mark class="mine">빨간색</mark> 내가 직접 쓴 것</div>
+    <div class="tools"><button class="mini do-edit" type="button">✏️ 프롬프트 직접 고치기 (선택)</button><button class="mini do-reset" type="button">고친 내용 되돌리기</button></div>
+    <textarea class="edit" style="display:none"></textarea>
+    <div class="diff" style="display:none"></div>
+    <button class="bigcopy" type="button">📋 프롬프트 복사</button>
+  </div><div class="pastebox"><h4>📥 AI 대안 비교표 붙여넣기</h4><p class="sub" style="margin:0 0 6px">붙여넣으면 4단계에서 대안을 고를 수 있습니다.</p>
+<textarea class="paste" id="paste-p3" placeholder="ChatGPT 답변 아래 복사 아이콘을 누른 뒤 여기에 Ctrl + V"></textarea>
+<div id="pastemsg-p3"></div></div><div class="note">2단계 결과와 비교해 보세요. 무엇이 달라졌나요?</div><div class="pager"><a class="btn ghost" href="#p2">← 실습 2 그냥 묻기</a><a class="btn" href="#p4">실습 4 내가 고르기 →</a></div></section></div><div class="page" id="p4"><section><h2><span class="badge">4</span>내가 고르기</h2><p class="sub">이 페이지에서만 고릅니다</p><div class="steps"><div>AI가 준 대안 가운데 하나를 고릅니다 (섞거나 새로 써도 됩니다)</div><div>고른 이유를 고릅니다. 내 말로 한 줄 쓰면 더 좋습니다</div></div><div id="hint-p4"></div><div id="fields-p4"></div><div class="note">AI는 결론을 내리지 않았습니다. <b>고르는 것은 직책자</b>입니다.</div><div class="pager"><a class="btn ghost" href="#p3">← 실습 3 맥락 넣기</a><a class="btn" href="#p5">실습 5 반대편 점검 →</a></div></section></div><div class="page" id="p5"><section><h2><span class="badge">5</span>반대편에서 다시 보기</h2><p class="sub">같은 채팅에서 이어서 합니다</p><div class="steps"><div>누구의 눈으로 볼지 고릅니다</div><div>복사해서 <b>같은 채팅</b>에 붙여넣습니다</div><div>'판단에 더 필요한 데이터'를 잘 봐 두세요. DAY 3~4 대시보드로 이어집니다</div></div><div id="fields-p5"></div>
+  <div class="preview" id="pv-p5">
+    <div class="ptitle">최종 프롬프트 미리보기 (고르거나 쓴 내용이 바로 들어갑니다)</div>
+    <pre></pre>
+    <div class="legend"><mark>보라색</mark> 내가 고른 것 &nbsp; <mark class="mine">빨간색</mark> 내가 직접 쓴 것</div>
+    <div class="tools"><button class="mini do-edit" type="button">✏️ 프롬프트 직접 고치기 (선택)</button><button class="mini do-reset" type="button">고친 내용 되돌리기</button></div>
+    <textarea class="edit" style="display:none"></textarea>
+    <div class="diff" style="display:none"></div>
+    <button class="bigcopy" type="button">📋 프롬프트 복사</button>
+  </div><div class="pastebox"><h4>📥 AI 점검 결과 붙여넣기 (선택)</h4><p class="sub" style="margin:0 0 6px">붙여넣으면 [내 기록]에 남습니다.</p>
+<textarea class="paste" id="paste-p5" placeholder="ChatGPT 답변 아래 복사 아이콘을 누른 뒤 여기에 Ctrl + V"></textarea>
+<div id="pastemsg-p5"></div></div><div class="warn">AI는 대화 상대의 생각에 맞춰 주려는 경향이 있습니다. 찬성 근거만 묻지 말고 <b>반대 근거</b>도 묻습니다.</div><div class="pager"><a class="btn ghost" href="#p4">← 실습 4 내가 고르기</a><a class="btn" href="#p6">실습 6 1PAGE →</a></div></section></div><div class="page" id="p6"><section><h2><span class="badge">6</span>1PAGE로 정리</h2><p class="sub">같은 채팅에서 이어서 합니다</p><div class="steps"><div>누구와 쓸 1PAGE인지 고릅니다 (윗선 결재, 유관 부서 협의, 팀원 공유, 경영회의)</div><div>복사해서 같은 채팅에 붙여넣습니다</div><div>1PAGE를 아래에 붙여넣으면 [내 기록]에 남습니다</div></div><div id="fields-p6"></div>
+  <div class="preview" id="pv-p6">
+    <div class="ptitle">최종 프롬프트 미리보기 (고르거나 쓴 내용이 바로 들어갑니다)</div>
+    <pre></pre>
+    <div class="legend"><mark>보라색</mark> 내가 고른 것 &nbsp; <mark class="mine">빨간색</mark> 내가 직접 쓴 것</div>
+    <div class="tools"><button class="mini do-edit" type="button">✏️ 프롬프트 직접 고치기 (선택)</button><button class="mini do-reset" type="button">고친 내용 되돌리기</button></div>
+    <textarea class="edit" style="display:none"></textarea>
+    <div class="diff" style="display:none"></div>
+    <button class="bigcopy" type="button">📋 프롬프트 복사</button>
+  </div>
+<h3>⭐ 직접 고치기 <small>먼저 끝난 분. 한 곳 이상</small></h3>
+<div class="warn"><b>고치는 곳은 이 페이지가 아니라 ChatGPT의 1PAGE 문서 창입니다.</b> 문서의 글자를 클릭하면 워드처럼 바로 고칠 수 있습니다.</div><div class="steps"><div>우리 회사에 안 맞는 말이나 AI 말투를 찾아 직접 지우거나 고칩니다</div><div>'내가 물을 질문' 가운데 실제로 안 물을 질문은 내 질문으로 바꿉니다</div><div>5단계 점검을 듣고 생각이 바뀌었다면 '선택안'을 고쳐도 됩니다</div></div>
+<h3>⭐ 워드 파일로 저장하기 <small>고쳤든 안 고쳤든 저장할 수 있습니다</small></h3>
+<div class="box"><button class="copy" type="button">복사</button><pre>위 1PAGE를 워드 파일(.docx)로 내려받을 수 있게 바로 만들어줘.
+- 문서 창에서 내가 고친 부분이 있으면 고친 그대로, 고치지 않았으면 지금 내용 그대로 쓴다
+- 다시 묻지 말고 바로 파일을 만든다
+- 내용은 바꾸지 않는다
+- A4 한 장</pre></div>
+<div class="note">파일을 만드는 데 시간이 조금 걸릴 수 있습니다. 고칠 생각이라면 고친 다음에 저장해야 고친 내용이 파일에 들어갑니다.</div><div class="pastebox"><h4>📥 AI 의사결정 1PAGE 붙여넣기</h4><p class="sub" style="margin:0 0 6px">고친 1PAGE를 붙여넣으면 [내 기록]에 남습니다. DAY 5에서 다시 씁니다.</p>
+<textarea class="paste" id="paste-p6" placeholder="ChatGPT 답변 아래 복사 아이콘을 누른 뒤 여기에 Ctrl + V"></textarea>
+<div id="pastemsg-p6"></div></div><div class="note">'최종 결정' 칸은 비어 있습니다. 확인할 것을 확인한 뒤 <b>내가</b> 채웁니다.</div><div class="pager"><a class="btn ghost" href="#p5">← 실습 5 반대편 점검</a><a class="btn" href="#record">내 기록 →</a></div></section></div><div class="page" id="record"><section><h2>내 기록</h2>
+  <p class="sub">안건, 내가 고른 대안과 이유, AI 의사결정 1PAGE, 단계별 프롬프트가 남습니다. 이 컴퓨터의 이 브라우저에만 저장됩니다.</p>
+  <div class="warn">여러 사람이 함께 쓰는 PC라면 수업이 끝날 때 <b>[기록 지우기]</b>를 눌러 주세요. 보관하려면 먼저 <b>[기록 인쇄]</b>를 누릅니다.</div>
+  <div class="tools"><button class="mini" id="rec-print" type="button">🖨 기록 인쇄</button><button class="mini" id="rec-copy" type="button">기록 전체 복사</button><button class="mini" id="rec-clear" type="button">기록 지우기</button></div>
+  <div id="rec-list"></div><div class="pager"><a class="btn ghost" href="#start">← 처음으로</a><span></span></div></section></div></div>
+<footer>AI 모닝클래스 | 직책자 AI 모닝클래스<br>※ 해당 문서는 배포 및 공유를 제한합니다</footer>
+<script>
+const CFG = {"day": "d2v3", "steps": [{"id": "p1", "name": "1 안건", "fields": [{"key": "team", "type": "radio", "label": "① 우리 팀", "options": [{"v": "MD.상품기획", "label": "MD.상품기획", "desc": "상품총괄팀, 가공식품팀, 생활팀, 패션팀, 건강뷰티팀, 문화팀"}, {"v": "모바일상품.모바일운영", "label": "모바일상품.모바일운영", "desc": "모바일상품팀, 모바일운영팀"}, {"v": "방송기획.제작.공영라방", "label": "방송기획.제작.공영라방", "desc": "방송기획팀, 방송제작실, 방송제작3팀, 공영라방팀, 방송기술팀"}, {"v": "CS.CX", "label": "CS.CX", "desc": "고객만족팀, CX팀"}, {"v": "경영기획.재무.전략", "label": "경영기획.재무.전략", "desc": "기획조정팀, 경영관리팀, 경영지원실, 채널전략팀"}, {"v": "마케팅.홍보.브랜드", "label": "마케팅.홍보.브랜드", "desc": "마케팅팀, 홍보브랜드팀"}, {"v": "방송심의", "label": "방송심의", "desc": "방송심의팀"}, {"v": "IT.AX", "label": "IT.AX", "desc": "AX추진단, 정보전략팀, 정보운영팀"}, {"v": "디자인.영상", "label": "디자인.영상", "desc": "영상아트팀, 영상제작팀"}, {"v": "ESG.정책.대외협력", "label": "ESG.정책.대외협력", "desc": "ESG경영팀, 대외협력팀, 정책개발팀, T-커머스 사업 총괄 TF팀"}, {"v": "인사.교육.총무안전", "label": "인사.교육.총무안전", "desc": "인재육성팀, 총무안전팀"}, {"v": "품질.물류", "label": "품질.물류", "desc": "품질혁신팀, 물류혁신팀"}, {"v": "전사.본부 총괄", "label": "전사.본부 총괄", "desc": "대표이사, 본부장, 실장 (여러 팀 총괄)"}, {"v": "그 밖의 부서", "label": "그 밖의 부서", "desc": "목록에 없으면 부서 이름을 직접 씁니다"}], "empty": "[팀 선택 전]"}, {"key": "agenda", "type": "radio", "label": "② 안건 카드 1개", "hint": "우리 팀 안건 2개가 나옵니다", "options": [{"v": "md1", "label": "명절 선물세트 방송을 한 번 더 편성할까?", "value": "명절 선물세트 방송을 한 번 더 편성할까?\n상황: 지난 명절 지역 농축수산물 선물세트 방송 반응이 좋았다\n목표: 중소 협력사와 지역 농가 매출을 늘린다\n제약: 방송 시간은 정해져 있고 협력사 재고 확보가 불확실하다", "detail": "<b>상황</b> 지난 명절 지역 농축수산물 선물세트 방송 반응이 좋았다<br><b>목표</b> 중소 협력사와 지역 농가 매출을 늘린다<br><b>제약</b> 방송 시간은 정해져 있고 협력사 재고 확보가 불확실하다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "MD.상품기획", "q": "명절 선물세트 방송을 한 번 더 하면 좋을까?", "ex": "대안 2로 하되 재고가 확인된 협력사 상품만", "basis": "설 대목 지역.소상공인 판로 기획 보도 (뉴스1, 2026.1.30)"}, {"v": "md2", "label": "첫 방송 실적이 낮은 소상공인 상품에 재방송 기회를 한 번 더 줄까?", "value": "첫 방송 실적이 낮은 소상공인 상품에 재방송 기회를 한 번 더 줄까?\n상황: 첫 방송 실적만으로 다음 편성이 정해져 소상공인이 다시 기회를 얻기 어렵다는 의견이 있다\n목표: 소상공인이 판로를 이어 가게 한다\n제약: 방송 시간은 한정되어 있고 매출 목표도 지켜야 한다", "detail": "<b>상황</b> 첫 방송 실적만으로 다음 편성이 정해져 소상공인이 다시 기회를 얻기 어렵다는 의견이 있다<br><b>목표</b> 소상공인이 판로를 이어 가게 한다<br><b>제약</b> 방송 시간은 한정되어 있고 매출 목표도 지켜야 한다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "MD.상품기획", "q": "첫 방송이 부진한 소상공인 상품을 다시 방송하면 좋을까?", "ex": "방송 준비가 충분했던 상품만 재방송 1회를 더 준다", "basis": "소상공인 입점지원 사업: 선정 기업에 TV홈쇼핑 생방송 1회와 재방송 1회 (헤럴드경제, 2026.4.28)"}, {"v": "bc2", "label": "협력사 대표가 직접 출연하는 방송을 늘릴까?", "value": "협력사 대표가 직접 출연하는 방송을 늘릴까?\n상황: 협력사 대표가 상품 이야기를 직접 전한 방송 반응이 좋았다\n목표: 상품 신뢰를 높이고 협력사 이야기를 알린다\n제약: 대표마다 방송 경험이 달라 사전 준비와 심의 검토가 필요하다", "detail": "<b>상황</b> 협력사 대표가 상품 이야기를 직접 전한 방송 반응이 좋았다<br><b>목표</b> 상품 신뢰를 높이고 협력사 이야기를 알린다<br><b>제약</b> 대표마다 방송 경험이 달라 사전 준비와 심의 검토가 필요하다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "방송기획.제작.공영라방", "q": "협력사 대표가 직접 나오는 방송을 늘리면 좋을까?", "ex": "방송 교육을 받은 대표만 먼저 출연한다", "basis": "공영라방 '슈퍼소담데이' 협력사 대표 직접 출연 (더나은미래, 2026.1.23)"}, {"v": "mo1", "label": "지역 축제 현장 라이브를 늘릴까?", "value": "지역 축제 현장 라이브를 늘릴까?\n상황: 지역 축제와 산지에서 한 현장 라이브 반응이 좋았다\n목표: 지역 특산물과 농가의 판로를 넓힌다\n제약: 현장 이동과 장비 준비에 인력이 많이 든다", "detail": "<b>상황</b> 지역 축제와 산지에서 한 현장 라이브 반응이 좋았다<br><b>목표</b> 지역 특산물과 농가의 판로를 넓힌다<br><b>제약</b> 현장 이동과 장비 준비에 인력이 많이 든다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "방송기획.제작.공영라방", "q": "지역 현장 라이브를 늘리면 좋을까?", "ex": "가까운 지역 축제부터 분기에 한 번만 먼저 한다", "basis": "공영라방 현장라이브 운영, 지난해 전국 43곳 (더나은미래), 2026 화천토마토축제 공영홈쇼핑 후원 (세계일보, 2026.7.31)"}, {"v": "mo2", "label": "숏폼 제작을 외주에서 내부 제작으로 바꿀까?", "value": "숏폼 제작을 외주에서 내부 제작으로 바꿀까?\n상황: 숏폼 영상 수요가 늘고 외주 비용도 늘었다\n목표: 제작 속도를 높이고 비용을 줄인다\n제약: 내부에 영상 편집 인력이 적다", "detail": "<b>상황</b> 숏폼 영상 수요가 늘고 외주 비용도 늘었다<br><b>목표</b> 제작 속도를 높이고 비용을 줄인다<br><b>제약</b> 내부에 영상 편집 인력이 적다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "디자인.영상", "q": "숏폼을 내부에서 만들면 좋을까?", "ex": "숏폼 절반만 내부 제작으로 먼저 바꾼다", "basis": "공영라방 하이라이트 숏폼 발행, 협력사 홍보 쇼츠 지원 (메트로신문, 더나은미래)"}, {"v": "cs1", "label": "주말 고객상담 운영시간을 늘릴까?", "value": "주말 고객상담 운영시간을 늘릴까?\n상황: 주말 방송 뒤 월요일 오전에 문의가 몰려 대기가 길다\n목표: 고객 불편을 줄이고 재구매로 잇는다\n제약: 상담 인력의 근무 부담. 근무제도 변경 협의가 필요할 수 있다", "detail": "<b>상황</b> 주말 방송 뒤 월요일 오전에 문의가 몰려 대기가 길다<br><b>목표</b> 고객 불편을 줄이고 재구매로 잇는다<br><b>제약</b> 상담 인력의 근무 부담. 근무제도 변경 협의가 필요할 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "CS.CX", "q": "주말 상담 시간을 늘리면 좋을까?", "ex": "명절 전후 주말에만 먼저 연장한다", "basis": "일반적인 상담 운영 고민 (특정 보도 근거 없음)"}, {"v": "cs2", "label": "반복 문의에 AI 챗봇 1차 응대를 도입할까?", "value": "반복 문의에 AI 챗봇 1차 응대를 도입할까?\n상황: 배송과 교환 같은 반복 문의가 상담의 큰 부분을 차지한다\n목표: 상담원이 어려운 문의에 집중하게 한다\n제약: 고객정보 보호 기준을 지켜야 하고 고령 고객이 많다", "detail": "<b>상황</b> 배송과 교환 같은 반복 문의가 상담의 큰 부분을 차지한다<br><b>목표</b> 상담원이 어려운 문의에 집중하게 한다<br><b>제약</b> 고객정보 보호 기준을 지켜야 하고 고령 고객이 많다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "CS.CX", "q": "AI 챗봇을 도입하면 좋을까?", "ex": "배송 문의에만 먼저 시범 적용", "basis": "업계의 AI 상담 흐름. 참고로 현대홈쇼핑은 고객용이 아니라 상담원 전용 AI 챗봇을 도입 (현대홈쇼핑 보도자료, 2026.9.15)"}, {"v": "mk1", "label": "연말 프로모션 예산 일부를 TV에서 모바일로 옮길까?", "value": "연말 프로모션 예산 일부를 TV에서 모바일로 옮길까?\n상황: 모바일 주문 비중이 커지고 있지만 TV 방송이 여전히 주력이다\n목표: 연말 매출 목표를 지키면서 모바일 고객을 늘린다\n제약: 총예산 변동 없음. 협력사와 약속한 TV 방송 일정은 유지", "detail": "<b>상황</b> 모바일 주문 비중이 커지고 있지만 TV 방송이 여전히 주력이다<br><b>목표</b> 연말 매출 목표를 지키면서 모바일 고객을 늘린다<br><b>제약</b> 총예산 변동 없음. 협력사와 약속한 TV 방송 일정은 유지<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "마케팅.홍보.브랜드", "q": "연말 예산을 모바일로 옮기면 좋을까?", "ex": "모바일 단독 상품 2개에만 예산을 옮긴다", "basis": "업계의 모바일 전환 흐름 (일반)"}, {"v": "mk2", "label": "정부 판로 행사 기간에 단독 기획전을 늘릴까?", "value": "정부 판로 행사 기간에 단독 기획전을 늘릴까?\n상황: 정부 판로 행사 기간에는 중소기업 참여 신청이 몰린다\n목표: 행사 효과를 협력사 매출로 잇는다\n제약: 같은 기간 다른 기획전에 쓸 예산과 인력이 줄어든다", "detail": "<b>상황</b> 정부 판로 행사 기간에는 중소기업 참여 신청이 몰린다<br><b>목표</b> 행사 효과를 협력사 매출로 잇는다<br><b>제약</b> 같은 기간 다른 기획전에 쓸 예산과 인력이 줄어든다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "마케팅.홍보.브랜드", "q": "판로 행사 기간에 기획전을 늘리면 좋을까?", "ex": "참여 신청이 많은 상품군에만 단독전을 연다", "basis": "5월 동행축제 참여, 중소기업 1,000곳 (더나은미래 보도)"}, {"v": "ga1", "label": "판로지원 성과를 협력사 매출 성장으로도 측정할까?", "value": "판로지원 성과를 협력사 매출 성장으로도 측정할까?\n상황: 판로지원 성과를 편성 비율 같은 숫자 하나로 설명하기 어렵다는 지적이 있다\n목표: 공공기관으로서 성과를 분명하게 보여 준다\n제약: 협력사 매출 자료를 모으고 검증하는 데 품이 든다", "detail": "<b>상황</b> 판로지원 성과를 편성 비율 같은 숫자 하나로 설명하기 어렵다는 지적이 있다<br><b>목표</b> 공공기관으로서 성과를 분명하게 보여 준다<br><b>제약</b> 협력사 매출 자료를 모으고 검증하는 데 품이 든다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "경영기획.재무.전략", "q": "판로지원 성과 지표를 바꾸면 좋을까?", "ex": "주요 협력사 일부만 먼저 추적한다", "basis": "공공기관 판로지원 성과지표 고민 (일반, 특정 보도 근거 없음)"}, {"v": "ga2", "label": "팀 업무 보고 양식을 1PAGE로 통일할까?", "value": "팀 업무 보고 양식을 1PAGE로 통일할까?\n상황: 팀마다 보고 양식이 달라 비교가 어렵다\n목표: 보고 시간을 줄이고 판단을 빠르게 한다\n제약: 팀마다 업무 성격이 달라 한 양식이 안 맞을 수 있다", "detail": "<b>상황</b> 팀마다 보고 양식이 달라 비교가 어렵다<br><b>목표</b> 보고 시간을 줄이고 판단을 빠르게 한다<br><b>제약</b> 팀마다 업무 성격이 달라 한 양식이 안 맞을 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "경영기획.재무.전략", "q": "보고 양식을 통일하면 좋을까?", "ex": "양식은 통일하되 팀별 칸 하나는 자유롭게", "basis": "일반적인 경영지원 고민 (특정 보도 근거 없음)"}, {"v": "ql1", "label": "고객 품질 문의를 상품군별로 모아 협력사에 매달 알려 줄까?", "value": "고객 품질 문의를 상품군별로 모아 협력사에 매달 알려 줄까?\n상황: 같은 상품군에서 비슷한 품질 문의가 반복되지만 협력사에는 건별로만 전달된다\n목표: 협력사가 원인을 미리 고쳐 반품을 줄인다\n제약: 문의를 분류하는 데 품이 들고 고객정보를 빼고 정리해야 한다", "detail": "<b>상황</b> 같은 상품군에서 비슷한 품질 문의가 반복되지만 협력사에는 건별로만 전달된다<br><b>목표</b> 협력사가 원인을 미리 고쳐 반품을 줄인다<br><b>제약</b> 문의를 분류하는 데 품이 들고 고객정보를 빼고 정리해야 한다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "품질.물류", "q": "품질 문의를 협력사와 정기적으로 공유하면 좋을까?", "ex": "문의가 많은 상품군 3개만 먼저 월 1회 공유한다", "basis": "일반적인 품질 관리 고민 (특정 보도 근거 없음)"}, {"v": "ql2", "label": "반품 회수 업체를 한 곳에서 두 곳으로 늘릴까?", "value": "반품 회수 업체를 한 곳에서 두 곳으로 늘릴까?\n상황: 명절 등 몰리는 시기에 반품 회수가 늦어진다\n목표: 회수 기간을 줄여 고객 불만을 줄인다\n제약: 업체 관리 부담과 비용이 늘 수 있다", "detail": "<b>상황</b> 명절 등 몰리는 시기에 반품 회수가 늦어진다<br><b>목표</b> 회수 기간을 줄여 고객 불만을 줄인다<br><b>제약</b> 업체 관리 부담과 비용이 늘 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "품질.물류", "q": "반품 업체를 늘리면 좋을까?", "ex": "명절 기간에만 두 번째 업체를 쓴다", "basis": "일반적인 물류 고민 (특정 보도 근거 없음)"}, {"v": "mb1", "label": "앱 원데이특가 상품 수를 줄이고 지역특화 테마샵 노출을 늘릴까?", "value": "앱 원데이특가 상품 수를 줄이고 지역특화 테마샵 노출을 늘릴까?\n상황: 원데이특가는 주문이 빠르지만 지역특화.전통시장 테마샵 상품은 잘 보이지 않는다\n목표: 지역 상품과 소상공인 상품의 판로를 넓힌다\n제약: 앱 첫 화면 자리는 한정되어 있고 특가 매출이 줄 수 있다", "detail": "<b>상황</b> 원데이특가는 주문이 빠르지만 지역특화.전통시장 테마샵 상품은 잘 보이지 않는다<br><b>목표</b> 지역 상품과 소상공인 상품의 판로를 넓힌다<br><b>제약</b> 앱 첫 화면 자리는 한정되어 있고 특가 매출이 줄 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "모바일상품.모바일운영", "q": "테마샵 노출을 늘리면 좋을까?", "ex": "주말에만 테마샵을 첫 화면에 올려 본다", "basis": "공영쇼핑 앱 소개의 원데이특가와 테마샵(지역특화, 공영마켓, 전통시장) 운영 (App Store)"}, {"v": "mb2", "label": "상품 후기 공개 기준과 이의제기 안내를 앱에서 더 찾기 쉽게 정비할까?", "value": "상품 후기 공개 기준과 이의제기 안내를 앱에서 더 찾기 쉽게 정비할까?\n상황: 7월부터 쇼핑몰은 후기 작성 자격, 게시 기간, 평점 기준, 삭제와 이의제기 절차를 공개해야 하는데 고객은 그 안내를 찾기 어렵다고 말한다\n목표: 후기 신뢰를 높이고 후기 관련 문의를 줄인다\n제약: 앱 화면 공간이 한정되어 있고 법에 맞춘 문구는 바꾸기 조심스럽다", "detail": "<b>상황</b> 7월부터 쇼핑몰은 후기 작성 자격, 게시 기간, 평점 기준, 삭제와 이의제기 절차를 공개해야 하는데 고객은 그 안내를 찾기 어렵다고 말한다<br><b>목표</b> 후기 신뢰를 높이고 후기 관련 문의를 줄인다<br><b>제약</b> 앱 화면 공간이 한정되어 있고 법에 맞춘 문구는 바꾸기 조심스럽다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "모바일상품.모바일운영", "q": "후기 기준 안내를 정비하면 좋을까?", "ex": "후기 작성 화면에 기준 안내 링크만 먼저 단다", "basis": "사용후기 정보공개 제도 2026.7.21 시행, 10.22 본격 적용 (공정거래위원회, 정책브리핑 2026.9.14)"}, {"v": "sm1", "label": "AI 가상인물이 상품을 추천하는 방송의 '가상인물' 표시 항목을 사내 점검표에 넣을까?", "value": "AI 가상인물이 상품을 추천하는 방송의 '가상인물' 표시 항목을 사내 점검표에 넣을까?\n상황: 6월부터 AI 가상인물이 상품을 추천하거나 보증하는 광고에는 '가상인물' 표시를 해야 하고 AI 모델이 나오는 방송이 늘었다\n목표: 규정 위반 없이 AI 콘텐츠를 계속 쓴다\n제약: 제작 부서마다 표시 방식이 다르고 화면이 복잡해질 수 있다", "detail": "<b>상황</b> 6월부터 AI 가상인물이 상품을 추천하거나 보증하는 광고에는 '가상인물' 표시를 해야 하고 AI 모델이 나오는 방송이 늘었다<br><b>목표</b> 규정 위반 없이 AI 콘텐츠를 계속 쓴다<br><b>제약</b> 제작 부서마다 표시 방식이 다르고 화면이 복잡해질 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "방송심의", "q": "가상인물 표시 항목을 점검표에 넣으면 좋을까?", "ex": "새로 만드는 방송부터 점검표를 적용한다", "basis": "공정위 「추천.보증 심사지침」 가상인물 표시 2026.6.1 시행, 대상은 가상인물이 추천.보증하는 광고 (정책브리핑, 2026.7.28), 공영홈쇼핑 AI 모델 (MTN, 2026.7.13)"}, {"v": "sm2", "label": "건강식품 방송 문구를 사전심의 전에 AI로 1차 점검할까?", "value": "건강식품 방송 문구를 사전심의 전에 AI로 1차 점검할까?\n상황: 건강식품 방송에서 효능을 오인하게 하는 표현으로 업계 제재가 이어졌다\n목표: 심의 지적을 줄이고 협력사 수정 시간을 줄인다\n제약: AI가 놓치거나 지나치게 막는 표현이 있을 수 있고 최종 판단은 사람이 해야 한다", "detail": "<b>상황</b> 건강식품 방송에서 효능을 오인하게 하는 표현으로 업계 제재가 이어졌다<br><b>목표</b> 심의 지적을 줄이고 협력사 수정 시간을 줄인다<br><b>제약</b> AI가 놓치거나 지나치게 막는 표현이 있을 수 있고 최종 판단은 사람이 해야 한다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "방송심의", "q": "AI로 문구를 먼저 점검하면 좋을까?", "ex": "건강식품 방송만 먼저 1차 점검에 쓴다", "basis": "방미심위 건강식품 효능 오인 제재 사례 (지디넷코리아, 2026.9.21, 2026.9.28)"}, {"v": "ax1", "label": "부서별 AI 활용 시범 과제를 공모해서 고를까?", "value": "부서별 AI 활용 시범 과제를 공모해서 고를까?\n상황: AX추진단이 생겼고 부서마다 AI를 쓰고 싶은 업무가 다르다\n목표: 효과가 보이는 과제부터 빠르게 시험한다\n제약: 보안 검토와 지원 인력이 한정되어 있다", "detail": "<b>상황</b> AX추진단이 생겼고 부서마다 AI를 쓰고 싶은 업무가 다르다<br><b>목표</b> 효과가 보이는 과제부터 빠르게 시험한다<br><b>제약</b> 보안 검토와 지원 인력이 한정되어 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "IT.AX", "q": "AI 시범 과제를 공모하면 좋을까?", "ex": "분기마다 과제 3개만 골라 지원한다", "basis": "공영홈쇼핑 AX추진단 출범 (아시아경제, 2026.7.13)"}, {"v": "ax2", "label": "자체 AI 윤리기준을 부서별 실천 사례집으로 풀어 안내할까?", "value": "자체 AI 윤리기준을 부서별 실천 사례집으로 풀어 안내할까?\n상황: AI 윤리기준을 마련했지만 현장에서는 무엇을 하면 되는지 묻는다\n목표: 직원이 기준을 업무에서 바로 쓰게 한다\n제약: 사례를 모으고 정리하는 데 시간이 들고 부서마다 업무가 다르다", "detail": "<b>상황</b> AI 윤리기준을 마련했지만 현장에서는 무엇을 하면 되는지 묻는다<br><b>목표</b> 직원이 기준을 업무에서 바로 쓰게 한다<br><b>제약</b> 사례를 모으고 정리하는 데 시간이 들고 부서마다 업무가 다르다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "IT.AX", "q": "윤리기준을 사례로 풀어 안내하면 좋을까?", "ex": "자주 묻는 사례 10개만 먼저 정리한다", "basis": "NIA 'AI 윤리 준수기관' 확인마크, 6대 원칙과 18개 행동기준 (파이낸셜뉴스, 2026.11.9)"}, {"v": "dv1", "label": "상품 상세페이지 시안을 AI 생성 이미지로 먼저 만들까?", "value": "상품 상세페이지 시안을 AI 생성 이미지로 먼저 만들까?\n상황: 협력사가 상세페이지 이미지를 늦게 보내 제작 일정이 밀린다\n목표: 시안을 빨리 보여 주고 협력사와 수정 횟수를 줄인다\n제약: 실제 상품과 다르게 보이면 안 되고 저작권과 가상인물 표시 기준을 지켜야 한다", "detail": "<b>상황</b> 협력사가 상세페이지 이미지를 늦게 보내 제작 일정이 밀린다<br><b>목표</b> 시안을 빨리 보여 주고 협력사와 수정 횟수를 줄인다<br><b>제약</b> 실제 상품과 다르게 보이면 안 되고 저작권과 가상인물 표시 기준을 지켜야 한다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "디자인.영상", "q": "AI로 시안을 먼저 만들면 좋을까?", "ex": "배경과 구도 시안에만 먼저 쓰고 상품 사진은 실물로 쓴다", "basis": "공영홈쇼핑 AI 모델 콘텐츠 제작비 절감 기대 (MTN, 2026.7.13)"}, {"v": "eg1", "label": "판매대금 조기 정산을 공영라방 협력사까지 넓힐까?", "value": "판매대금 조기 정산을 공영라방 협력사까지 넓힐까?\n상황: 방송 협력사는 정산 마감 이틀 뒤 판매대금을 받을 수 있게 됐지만 라이브 방송만 하는 소상공인은 아직 대상이 아니다\n목표: 소상공인 협력사의 자금 부담을 줄인다\n제약: 정산 업무와 자금 운용 부담이 늘고 시스템 변경이 필요하다", "detail": "<b>상황</b> 방송 협력사는 정산 마감 이틀 뒤 판매대금을 받을 수 있게 됐지만 라이브 방송만 하는 소상공인은 아직 대상이 아니다<br><b>목표</b> 소상공인 협력사의 자금 부담을 줄인다<br><b>제약</b> 정산 업무와 자금 운용 부담이 늘고 시스템 변경이 필요하다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "ESG.정책.대외협력", "q": "조기 정산 대상을 넓히면 좋을까?", "ex": "매출 규모가 작은 소상공인 협력사부터 시범 적용한다", "basis": "상생결제와 방송 협력사 판매대금 조기 정산, 2026 대한민국 대표브랜드 대상 상생경영 부문 (헤럴드경제, 2026.4.13)"}, {"v": "eg2", "label": "T커머스 사업권에 대비해 소상공인 전용 편성안을 미리 만들어 둘까?", "value": "T커머스 사업권에 대비해 소상공인 전용 편성안을 미리 만들어 둘까?\n상황: 중소기업 전용 T커머스 채널 신설 논의가 이어지고 있다\n목표: 사업권 논의가 정해지면 바로 설명할 수 있게 한다\n제약: 결정 시점이 불확실해 미리 쓴 자료가 쓸모없어질 수 있다", "detail": "<b>상황</b> 중소기업 전용 T커머스 채널 신설 논의가 이어지고 있다<br><b>목표</b> 사업권 논의가 정해지면 바로 설명할 수 있게 한다<br><b>제약</b> 결정 시점이 불확실해 미리 쓴 자료가 쓸모없어질 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "ESG.정책.대외협력", "q": "T커머스 편성안을 미리 만들면 좋을까?", "ex": "한 장짜리 기본안만 먼저 만든다", "basis": "중기 전용 T커머스 논의 (파이낸셜뉴스 2025.12.17, 헤럴드경제 2026.1.12, 쿠키뉴스 2026.1.22)"}, {"v": "hr1", "label": "AI 교육을 들은 직원 중 부서별 'AI 도우미'를 정할까?", "value": "AI 교육을 들은 직원 중 부서별 'AI 도우미'를 정할까?\n상황: 임직원 AI 교육 뒤 부서마다 활용 차이가 크다\n목표: 교육 내용이 업무로 이어지게 한다\n제약: 도우미가 맡을 업무가 늘어 부담이 생길 수 있다", "detail": "<b>상황</b> 임직원 AI 교육 뒤 부서마다 활용 차이가 크다<br><b>목표</b> 교육 내용이 업무로 이어지게 한다<br><b>제약</b> 도우미가 맡을 업무가 늘어 부담이 생길 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "인사.교육.총무안전", "q": "부서별 AI 도우미를 두면 좋을까?", "ex": "희망자로 시작하고 활동을 평가에 반영할지는 나중에 정한다", "basis": "공영홈쇼핑 임직원 AI 교육 (MTN, 2026.9.4)"}, {"v": "hr2", "label": "현장 라이브 촬영 전 안전 점검표를 정례화할까?", "value": "현장 라이브 촬영 전 안전 점검표를 정례화할까?\n상황: 산지와 축제 현장에서 하는 라이브 방송이 늘었다\n목표: 현장 사고를 미리 막는다\n제약: 현장마다 환경이 달라 점검표 하나로 다 맞추기 어렵다", "detail": "<b>상황</b> 산지와 축제 현장에서 하는 라이브 방송이 늘었다<br><b>목표</b> 현장 사고를 미리 막는다<br><b>제약</b> 현장마다 환경이 달라 점검표 하나로 다 맞추기 어렵다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "인사.교육.총무안전", "q": "현장 안전 점검표를 정례화하면 좋을까?", "ex": "야외 현장 라이브에만 먼저 적용한다", "basis": "공영라방 지역 현장 라이브 확대 (더나은미래 보도)"}, {"v": "ex1", "label": "부서별 AI 활용 성과를 분기마다 한자리에서 공유할까?", "value": "부서별 AI 활용 성과를 분기마다 한자리에서 공유할까?\n상황: 부서마다 AI를 쓰는 방식과 성과가 달라 서로 잘 모른다\n목표: 잘된 방법을 다른 부서로 빠르게 퍼뜨린다\n제약: 보고 부담이 늘고 성과 비교가 경쟁으로 흐를 수 있다", "detail": "<b>상황</b> 부서마다 AI를 쓰는 방식과 성과가 달라 서로 잘 모른다<br><b>목표</b> 잘된 방법을 다른 부서로 빠르게 퍼뜨린다<br><b>제약</b> 보고 부담이 늘고 성과 비교가 경쟁으로 흐를 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "전사.본부 총괄", "q": "AI 성과 공유회를 정례화하면 좋을까?", "ex": "발표 대신 한 장 사례만 모아 공유한다", "basis": "AX추진단 출범과 임직원 AI 교육 (아시아경제 2026.7.13, MTN 2026.9.4)"}, {"v": "ex2", "label": "팀장과 팀원의 1:1 대화를 분기마다 정례화할까?", "value": "팀장과 팀원의 1:1 대화를 분기마다 정례화할까?\n상황: 관리자와 직원의 몰입도가 함께 낮아지고 있다는 조사가 있다\n목표: 팀원의 어려움을 일찍 알고 지원한다\n제약: 팀장 업무 부담이 늘고 형식적인 면담이 될 수 있다", "detail": "<b>상황</b> 관리자와 직원의 몰입도가 함께 낮아지고 있다는 조사가 있다<br><b>목표</b> 팀원의 어려움을 일찍 알고 지원한다<br><b>제약</b> 팀장 업무 부담이 늘고 형식적인 면담이 될 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "전사.본부 총괄", "q": "1:1 대화를 정례화하면 좋을까?", "ex": "짧게 15분씩 시작하고 기록 양식은 자유롭게 둔다", "basis": "갤럽 「State of the Global Workplace 2026」 관리자 몰입도 27%→22%"}, {"v": "ot1", "label": "주간 회의를 격주로 바꿀까?", "value": "주간 회의를 격주로 바꿀까?\n상황: 회의 시간이 길고 안건이 반복된다는 말이 있다\n목표: 회의 시간을 줄이고 실행 시간을 늘린다\n제약: 공유가 늦어질 수 있다", "detail": "<b>상황</b> 회의 시간이 길고 안건이 반복된다는 말이 있다<br><b>목표</b> 회의 시간을 줄이고 실행 시간을 늘린다<br><b>제약</b> 공유가 늦어질 수 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "그 밖의 부서", "q": "주간 회의를 격주로 바꾸면 좋을까?", "ex": "격주로 바꾸되 급한 안건은 메신저로 공유", "basis": "일반"}, {"v": "ot2", "label": "팀 업무 매뉴얼을 AI로 정리해 공유할까?", "value": "팀 업무 매뉴얼을 AI로 정리해 공유할까?\n상황: 담당자가 바뀌면 업무 인수인계가 어렵다\n목표: 누구나 찾아볼 수 있는 매뉴얼을 만든다\n제약: 내부자료와 개인정보가 섞여 있다", "detail": "<b>상황</b> 담당자가 바뀌면 업무 인수인계가 어렵다<br><b>목표</b> 누구나 찾아볼 수 있는 매뉴얼을 만든다<br><b>제약</b> 내부자료와 개인정보가 섞여 있다<br><span style='color:#5d5b68;font-size:13px'>※ 교육용 가상 안건</span>", "team": "그 밖의 부서", "q": "업무 매뉴얼을 AI로 정리하면 좋을까?", "ex": "개인정보가 없는 매뉴얼부터 먼저 정리한다", "basis": "일반"}], "byTeam": true, "wide": true, "showAgenda": true, "orText": "p1.agfull", "empty": "[안건 선택 전]"}, {"key": "agendax", "type": "text", "label": "③ 안건을 직접 쓸 때 (선택)", "hint": "쓰면 위 카드 대신 들어갑니다. 안건 한 줄과 상황, 목표, 제약을 모두 씁니다. 내부 숫자나 실명은 쓰지 않습니다", "placeholder": "예: 협력사 간담회를 분기마다 열까?"}, {"key": "agsitu", "type": "text", "label": "③-1 상황", "hint": "지금 무슨 일이 있나요?", "placeholder": "예: 협력사 의견을 들을 자리가 1년에 한 번뿐이다"}, {"key": "aggoal", "type": "text", "label": "③-2 목표", "hint": "무엇을 얻고 싶나요?", "placeholder": "예: 협력사 불만을 일찍 알고 대응한다"}, {"key": "agcons", "type": "text", "label": "③-3 제약", "hint": "무엇이 걸리나요?", "placeholder": "예: 담당 인력이 적고 장소 섭외가 필요하다"}]}, {"id": "p2", "name": "2 그냥 묻기", "fields": []}, {"id": "p3", "name": "3 맥락 넣기", "fields": [{"key": "criteria", "type": "check", "label": "① 판단기준", "hint": "2개만", "max": 2, "join": " / ", "empty": "[판단기준 선택 전]", "options": [{"v": "고객 반응", "label": "고객 반응"}, {"v": "현장 팀원 부담", "label": "현장 팀원 부담"}, {"v": "비용", "label": "비용"}, {"v": "중소기업 협력사에 미치는 영향", "label": "중소기업 협력사에 미치는 영향"}, {"v": "실행 속도", "label": "실행 속도"}, {"v": "우리 회사의 공공성", "label": "우리 회사의 공공성"}, {"v": "실패했을 때의 위험", "label": "실패했을 때의 위험"}, {"v": "정보 공유와 소통", "label": "정보 공유와 소통"}, {"v": "보안과 정보 보호", "label": "보안과 정보 보호"}]}, {"key": "cond", "type": "text", "label": "② 우리 팀 조건 한 줄", "hint": "선택", "placeholder": "예: 다음 달에 시스템 교체가 예정되어 있다"}], "template": "나는 우리 회사 {p1.team} 직책자다. 아래 안건을 판단하려고 한다.\n안건: {p1.agenda}\n판단기준: {criteria}[[\n우리 팀 조건: {cond}]]\n\n대안 3개(현행 유지 포함)를 표로 비교해줘.\n표의 열: 대안 | 장점 | 리스크 | 판단기준에 비춘 평가 | 결정 전에 확인할 것\n대안 칸은 '대안 1: 이름'처럼 번호를 붙여줘.\n우리 회사 사정을 모르는 부분은 [확인 필요]로 표시하고 어느 대안이 좋은지 결론은 내리지 마."}, {"id": "p4", "name": "4 내가 고르기", "fields": [{"key": "pick", "type": "radio", "label": "① 내가 고른 대안", "fromPaste": "p3", "orText": "p4.pickx", "combine": true, "wide": true, "empty": "[대안 선택 전]"}, {"key": "pickx", "type": "text", "label": "대안 직접 쓰기 또는 덧붙이기", "hint": "선택. 위에서 고른 대안이 있으면 그 뒤에 덧붙여집니다", "placeholder": "예: 대안 2로 하되 한 달 시범 운영", "phFn": "pickEx"}, {"key": "why", "type": "radio", "label": "② 고른 이유", "wide": true, "empty": "[이유 선택 전]", "options": [{"v": "내가 고른 판단기준에 가장 잘 맞는다", "label": "내가 고른 판단기준에 가장 잘 맞는다"}, {"v": "리스크를 우리 팀이 감당할 수 있다", "label": "리스크를 우리 팀이 감당할 수 있다"}, {"v": "지금 팀 상황에서 실제로 할 수 있다", "label": "지금 팀 상황에서 실제로 할 수 있다"}, {"v": "실패해도 되돌리기 쉽다", "label": "실패해도 되돌리기 쉽다"}]}, {"key": "whyx", "type": "text", "label": "이유를 내 말로 한 줄", "hint": "선택", "placeholder": "예: 협력사와 약속한 일정을 지킬 수 있다"}]}, {"id": "p5", "name": "5 반대편 점검", "fields": [{"key": "who", "type": "radio", "label": "① 누구의 눈으로 볼까요?", "empty": "[입장 선택 전]", "options": [{"v": "협력사", "label": "협력사"}, {"v": "고객", "label": "고객"}, {"v": "경영진", "label": "경영진"}, {"v": "현장 팀원", "label": "현장 팀원"}]}, {"key": "whox", "type": "text", "label": "다른 입장 직접 쓰기", "hint": "선택", "placeholder": "예: 방송 심의 담당자"}], "template": "내가 고른 대안: {p4.pick}\n고른 이유: {p4.why}[[ / {p4.whyx}]]\n\n이 대안을 {who}[[ ({whox})]]의 눈으로 다시 점검해줘.\n1. 내가 놓친 위험 3가지\n2. 이 입장에서 가장 반대할 지점과 이유\n3. 결정 전에 꼭 확인할 것 3가지\n4. 판단에 더 필요한 데이터 3가지 (어디서 구할 수 있는지도)\n5. 결정 전에 내가 물을 질문 3개 (누구에게 물을지 함께)\n듣기 좋은 말보다 불편하지만 중요한 지적을 우선해줘."}, {"id": "p6", "name": "6 1PAGE", "fields": [{"key": "to", "type": "radio", "label": "① 누구와 쓸 1PAGE인가요?", "empty": "[대상 선택 전]", "wide": true, "options": [{"v": "윗선 결재", "label": "윗선 결재 (내 상위 결재권자)", "value": "윗선 결재용 (내 상위 결재권자). 결론과 확인 계획을 앞에 두고 요청할 결정을 분명하게 써줘."}, {"v": "유관 부서 협의", "label": "유관 부서와 협의 (다른 팀장, 부서장)", "value": "유관 부서 협의용 (다른 팀장, 부서장). 상대 부서에 미치는 영향과 협조 요청을 앞에 써줘."}, {"v": "팀원 공유", "label": "우리 팀원에게 공유 (실행 준비)", "value": "우리 팀원 공유용 (실행 준비). 누가 무엇을 확인할지와 실행 순서를 앞에 써줘."}, {"v": "경영회의", "label": "경영회의 안건", "value": "경영회의 안건용. 회사 전체 관점(공공성, 중소기업 협력사)과 리스크를 앞에 써줘."}]}, {"key": "add", "type": "text", "label": "② 꼭 넣고 싶은 내용", "hint": "선택", "placeholder": "예: 협력사 의견 수렴 일정"}], "template": "지금까지 대화를 'AI 의사결정 1PAGE'로 정리해줘. 한 장에 들어가게.\n쓰는 곳: {to}\n1) 안건 한 줄\n2) 대안 비교 (표)\n3) 직책자 선택안 (잠정): {p4.pick}\n4) 선택 이유: {p4.why}[[ / {p4.whyx}]]\n5) 주요 리스크 3개\n6) 결정 전에 확인할 것 3개 (확인할 사람과 시기 칸은 비워 둬)\n7) 결정 전에 내가 물을 질문 3개 (누구에게 물을지 함께)\n8) 판단에 더 필요한 데이터[[\n꼭 넣을 내용: {add}]]\n'최종 결정' 칸은 비워 둬. 내가 확인을 마친 뒤 채운다."}]};
+const KEY = 'aiclass_leader_' + CFG.day;
+let S = {sel:{}, txt:{}, edit:{}, rec:{}};
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function optionsOf(step, f){
+  if (!f.from) return f.options;
+  const [sid, key] = f.from.split('.');
+  const src = CFG.steps.find(x => x.id === sid);
+  const sf = src.fields.find(x => x.key === key);
+  let vals = (S.sel[sid+'.'+key] || []).map(v => (sf.options.find(o => o.v === v) || {label:v}).label);
+  (f.fromText || []).forEach(t => { const tv = (S.txt[t]||'').trim(); if (tv) vals.push(tv); });
+  if (!vals.length) return [{v:'', label:'(1단계에서 고른 업무가 여기에 나타납니다)', disabled:true}];
+  return vals.map(v => ({v, label:v}));
+}
+function labelOf(step, f, v){ const o = optionsOf(step, f).find(o => o.v === v); return o ? (o.value || o.label) : v; }
+
+function renderFields(step){
+  const host = document.getElementById('fields-' + step.id); if (!host) return;
+  host.innerHTML = '';
+  step.fields.forEach(f => {
+    if (f.type === 'calc') return;
+    const id = step.id + '.' + f.key;
+    const box = document.createElement('div'); box.className = 'field';
+    box.innerHTML = '<div class="flabel">' + esc(f.label) + (f.hint ? '<small>' + esc(f.hint) + '</small>' : '') + '</div>';
+    if (f.type === 'text') {
+      const inp = document.createElement('input'); inp.className = 'line'; inp.placeholder = (f.phFn && window[f.phFn] && window[f.phFn]()) || f.placeholder || '';
+      inp.value = S.txt[id] || '';
+      inp.addEventListener('input', () => { S.txt[id] = inp.value; S.edit[step.id] = null; if (window.afterText) afterText(step, id); save(); renderPreview(step); });
+      box.appendChild(inp);
+    } else {
+      const wrap = document.createElement('div'); wrap.className = 'chips';
+      const cur = S.sel[id] || (f.default ? [].concat(f.default) : []);
+      if (!S.sel[id] && f.default) S.sel[id] = cur;
+      optionsOf(step, f).forEach(o => {
+        const b = document.createElement('button'); b.type = 'button';
+        b.className = 'chip' + (f.wide ? ' wide' : '') + (cur.includes(o.v) && o.v ? ' on' : '');
+        b.innerHTML = esc(o.label) + (o.desc ? '<span class="d">' + esc(o.desc) + '</span>' : '');
+        if (o.gray) { b.style.opacity = .5; } if (o.disabled) { b.disabled = true; b.style.opacity = .6; }
+        b.addEventListener('click', () => {
+          let arr = S.sel[id] || [];
+          if (f.type === 'radio') arr = arr.includes(o.v) ? [] : [o.v];
+          else if (arr.includes(o.v)) arr = arr.filter(x => x !== o.v);
+          else { if (f.max && arr.length >= f.max) { alert('최대 ' + f.max + '개까지 고를 수 있습니다.'); return; } arr = arr.concat(o.v); }
+          S.sel[id] = arr; S.edit[step.id] = null; save();
+          renderFields(step); renderPreview(step);
+          if (window.afterPick) afterPick(step);
+          CFG.steps.forEach(st => { if (st !== step && st.fields.some(x => x.from && x.from.startsWith(step.id + '.'))) { renderFields(st); renderPreview(st); } });
+        });
+        wrap.appendChild(b);
+      });
+      box.appendChild(wrap);
+      if (f.showAgenda) {
+        const sel = (S.sel[id] || [])[0]; const o = f.options.find(x => x.v === sel);
+        if (o && o.detail) { const ag = document.createElement('div'); ag.className = 'agenda'; ag.innerHTML = o.detail; box.appendChild(ag); }
+      }
+    }
+    host.appendChild(box);
+  });
+}
+
+// 프롬프트 만들기: {key} 치환, [[ ... ]] 는 안의 값이 비면 통째로 뺌
+function build(step, html){
+  const val = key => {
+    let st = step, k = key; if (key.includes('.')) { const p = key.split('.'); st = CFG.steps.find(x => x.id === p[0]); k = p[1]; }
+    const f = st.fields.find(x => x.key === k);
+    const id = st.id + '.' + k;
+    if (!f) return {t:'', mine:false};
+    if (f.type === 'text') { const t = (S.txt[id] || '').trim(); return {t, mine:true}; }
+    if (f.type === 'calc') { const t = (window[f.fn] ? window[f.fn]() : ''); return {t, mine:false, empty:f.empty || ''}; }
+    if (f.orText) { const ot = (S.txt[f.orText]||'').trim(); const sv = (S.sel[id]||[]).filter(Boolean)[0]; if (ot && f.combine && sv) return {t: sv + ' (덧붙임: ' + ot + ')', mine:true}; if (ot) return {t:ot, mine:true}; }
+    const arr = (S.sel[id] || []).filter(Boolean).map(v => labelOf(st, f, v));
+    if (!arr.length) return {t:'', mine:false, empty:f.empty || ''};
+    if (f.join === 'lines') return {t: arr.map(a => '- ' + a).join('\n'), mine:false};
+    if (f.join === 'num') return {t: arr.map((a,i) => (i+1) + '. ' + a).join('\n'), mine:false};
+    return {t: arr.join(f.join || ', '), mine:false};
+  };
+  const fill = (seg) => seg.replace(/\{([\w.]+)\}/g, (_, k) => {
+    const v = val(k);
+    if (!v.t) return html ? '<mark>' + esc(v.empty || '[선택 전]') + '</mark>' : (v.empty || '[선택 전]');
+    return html ? '<mark' + (v.mine ? ' class="mine"' : '') + '>' + esc(v.t) + '</mark>' : v.t;
+  });
+  let tpl = step.template;
+  tpl = tpl.replace(/\[\[([\s\S]*?)\]\]/g, (_, inner) => {
+    const keys = [...inner.matchAll(/\{([\w.]+)\}/g)].map(m => m[1]);
+    return keys.every(k => val(k).t) ? inner : '';
+  });
+  if (!html) return fill(tpl);
+  // html: 고정 문구는 이스케이프, 값은 mark
+  return tpl.split(/(\{[\w.]+\})/).map(p => /^\{[\w.]+\}$/.test(p) ? fill(p) : esc(p)).join('');
+}
+
+function tokens(s){ return s.split(/(\s+)/).filter(x => x !== ''); }
+function diffHTML(a, b){
+  const A = tokens(a), B = tokens(b), n = A.length, m = B.length;
+  const L = Array.from({length:n+1}, () => new Array(m+1).fill(0));
+  for (let i=n-1;i>=0;i--) for (let j=m-1;j>=0;j--) L[i][j] = A[i]===B[j] ? L[i+1][j+1]+1 : Math.max(L[i+1][j], L[i][j+1]);
+  let i=0,j=0,out='',changes=[],del='',ins='';
+  const flush = () => { if (del||ins) { changes.push({from:del.trim(), to:ins.trim()}); out += (del?'<del>'+esc(del)+'</del>':'') + (ins?'<ins>'+esc(ins)+'</ins>':''); del=''; ins=''; } };
+  while (i<n && j<m) { if (A[i]===B[j]) { flush(); out += esc(A[i]); i++; j++; } else if (L[i+1][j] >= L[i][j+1]) { del += A[i++]; } else { ins += B[j++]; } }
+  while (i<n) del += A[i++]; while (j<m) ins += B[j++]; flush();
+  return {html: out, changes: changes.filter(c => c.from.trim() || c.to.trim())};
+}
+
+function renderPreview(step){
+  const pv = document.getElementById('pv-' + step.id); if (!pv) return;
+  const gen = build(step, false);
+  const edited = S.edit[step.id];
+  pv.querySelector('pre').innerHTML = build(step, true);
+  const ed = pv.querySelector('.edit'), df = pv.querySelector('.diff');
+  if (edited != null) {
+    ed.style.display = 'block'; if (ed.value !== edited) ed.value = edited;
+    const d = diffHTML(gen, edited);
+    df.style.display = d.changes.length ? 'block' : 'none';
+    df.innerHTML = '<b>최종 프롬프트</b> (빨간 글씨가 내가 직접 고친 부분이며 복사할 때 그대로 들어갑니다)<br>' + d.html.replace(/\n/g,'<br>');
+  } else { ed.style.display = 'none'; df.style.display = 'none'; }
+}
+
+function finalPrompt(step){ return S.edit[step.id] != null ? S.edit[step.id] : build(step, false); }
+
+function record(step){
+  const choices = [], typed = [];
+  step.fields.forEach(f => {
+    const id = step.id + '.' + f.key;
+    if (f.type === 'text') { const t = (S.txt[id]||'').trim(); if (t) typed.push(f.label + ': ' + t); }
+    else { const a = (S.sel[id]||[]).filter(Boolean).map(v => labelOf(step, f, v)); if (a.length) choices.push(f.label + ': ' + a.join(' / ')); }
+  });
+  const edits = S.edit[step.id] != null ? diffHTML(build(step,false), S.edit[step.id]).changes : [];
+  S.rec[step.id] = {name: step.name, choices, typed, edits, final: finalPrompt(step)};
+  save(); renderRecord();
+}
+
+function renderRecord(){
+  const host = document.getElementById('rec-list'); if (!host) return;
+  const ids = CFG.steps.filter(s => s.template).map(s => s.id);
+  const has = ids.filter(id => S.rec[id]);
+  if (!has.length) { host.innerHTML = '<p class="empty">아직 기록이 없습니다. 각 단계에서 [프롬프트 복사]를 누르면 여기에 남습니다.</p>'; return; }
+  host.innerHTML = has.map(id => { const r = S.rec[id];
+    return '<div class="rec"><h4>' + esc(r.name) + '</h4>' +
+      (r.choices.length ? '<div class="k">내가 고른 것</div><div>' + r.choices.map(esc).join('<br>') + '</div>' : '') +
+      (r.typed.length ? '<div class="k" style="margin-top:6px">내가 직접 쓴 것</div><div style="color:var(--red)">' + r.typed.map(esc).join('<br>') + '</div>' : '') +
+      (r.edits.length ? '<div class="k" style="margin-top:6px">프롬프트에서 직접 고친 부분</div><div>' + r.edits.map(c => (c.from ? '<del>' + esc(c.from) + '</del> → ' : '추가: ') + '<b style="color:var(--red)">' + esc(c.to || '(삭제)') + '</b>').join('<br>') + '</div>' : '') +
+      '<div class="k" style="margin-top:6px">최종 프롬프트</div><pre>' + esc(r.final) + '</pre></div>'; }).join('');
+}
+
+function copyText(text, btn){
+  const label = btn.textContent;
+  const done = () => { btn.textContent = '복사됨! ChatGPT 입력창에 붙여넣으세요 (Ctrl + V)'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = label; btn.classList.remove('done'); }, 2200); };
+  const fallback = () => { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); done(); } catch(e) { alert('복사하지 못했습니다. 미리보기를 직접 선택해 복사해 주세요.'); } t.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+}
+
+// 사실/해석 분류 카드
+function renderSort(){
+  document.querySelectorAll('[data-sort]').forEach(host => {
+    const items = CFG.sort[host.dataset.sort];
+    host.innerHTML = '';
+    items.forEach((it, i) => {
+      const c = document.createElement('div'); c.className = 'sortcard';
+      c.innerHTML = '<span>' + esc(it.t) + '</span><span class="opts"></span><span class="res"></span>';
+      ['사실','해석'].forEach(lab => { const b = document.createElement('button'); b.type='button'; b.className='chip'; b.textContent = lab;
+        b.addEventListener('click', () => { c.querySelectorAll('.chip').forEach(x => x.classList.remove('on')); b.classList.add('on');
+          const r = c.querySelector('.res'); const ok = lab === it.a; r.className = 'res ' + (ok ? 'ok' : 'no');
+          r.textContent = (ok ? '맞습니다. ' : '다시 보세요. ') + it.why; });
+        c.querySelector('.opts').appendChild(b); });
+      host.appendChild(c);
+    });
+  });
+}
+
+function init(){
+  CFG.steps.forEach(step => {
+    if (!step.template) { if (step.fields && step.fields.length) renderFields(step); return; }
+    renderFields(step);
+    const pv = document.getElementById('pv-' + step.id);
+    pv.querySelector('.bigcopy').addEventListener('click', e => { record(step); copyText(finalPrompt(step), e.currentTarget); });
+    pv.querySelector('.do-edit').addEventListener('click', () => { if (S.edit[step.id] == null) S.edit[step.id] = build(step, false); save(); renderPreview(step); pv.querySelector('.edit').focus(); });
+    pv.querySelector('.do-reset').addEventListener('click', () => { S.edit[step.id] = null; save(); renderPreview(step); });
+    pv.querySelector('.edit').addEventListener('input', e => { S.edit[step.id] = e.target.value; save(); renderPreview(step); });
+    renderPreview(step);
+  });
+  renderSort(); renderRecord();
+  const rp = document.getElementById('rec-print'); if (rp) rp.addEventListener('click', () => window.print());
+  const rc = document.getElementById('rec-copy'); if (rc) rc.addEventListener('click', e => copyText(document.getElementById('rec-list').innerText, e.currentTarget));
+  const rx = document.getElementById('rec-clear'); if (rx) rx.addEventListener('click', () => { if (confirm('이 페이지에서 고른 것과 기록을 모두 지울까요?')) { S = {sel:{}, txt:{}, edit:{}, rec:{}, pa:{}}; save(); location.reload(); } });
+}
+
+/* 화면 전환 (템플릿 그대로) */
+const pages = [...document.querySelectorAll('.page')];
+function show(id) {
+  if (!id) { try { id = location.hash.slice(1); } catch (e) {} }
+  const el = id && document.getElementById(id);
+  const target = el && el.classList.contains('page') ? id : 'start';
+  pages.forEach(p => p.classList.toggle('on', p.id === target));
+  document.querySelectorAll('#menu a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + target));
+  try { history.replaceState(null, '', '#' + target); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+document.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); show(a.getAttribute('href').slice(1)); });
+
+const INSTR = false;
+if (!S.pa) S.pa = {};
+const AG = CFG.steps[0].fields.find(f => f.key === 'agenda').options;
+function norm(s){ return String(s||'').replace(/[\s*`]/g,''); }
+// 답변 안에 표가 여러 개면 '대안' 열이 있는 표 하나만 읽는다
+function parseTable(text, want){
+  const tables = []; let cur = null;
+  String(text||'').replace(/<br\s*\/?>/gi, ' / ').split(/\r?\n/).forEach(raw => {
+    const l = raw.trim(); let c = null;
+    if (l.includes('|')) { c = l.split('|').map(x => x.trim()); if (c[0]==='') c.shift(); if (c[c.length-1]==='') c.pop(); }
+    else if (l.includes('\t')) c = l.split('\t').map(x => x.trim());
+    if (!c || c.length < 2) { cur = null; return; }
+    if (c.every(x => /^:?-{2,}:?$/.test(x) || x==='')) return;
+    if (!cur) { cur = []; tables.push(cur); }
+    cur.push(c.map(x => x.replace(/\*\*/g,'').replace(/\\([~*_|#>.\-\[\]()])/g,'$1').replace(/&#x20;|&nbsp;/g,' ').trim()));
+  });
+  if (!tables.length) return {head:[], body:[]};
+  const re = want || /대안/;
+  let t = tables.find(tb => tb[0].some(x => re.test(x))) || (want ? null : tables[0]);
+  if (!t) return {head:[], body:[]};
+  const isHead = t[0].some(x => /대안|업무|데이터|확인|위험|항목/.test(x)) && !t[0].some(x => /^대안\s*\d/.test(x));
+  return isHead ? {head: t[0], body: t.slice(1)} : {head: [], body: t};
+}
+function alternatives(){
+  const t = parseTable(S.pa.p3); const ai = Math.max(0, t.head.findIndex(h => /대안/.test(h)));
+  return t.body.map(r => r[ai]).filter(Boolean);
+}
+function agCompose(){
+  const t = k => (S.txt['p1.' + k]||'').trim(); const q = t('agendax');
+  S.txt['p1.agfull'] = q ? [q, t('agsitu') && '상황: ' + t('agsitu'), t('aggoal') && '목표: ' + t('aggoal'), t('agcons') && '제약: ' + t('agcons')].filter(Boolean).join('\n') : '';
+}
+function agWarn(){
+  const host = document.getElementById('fields-p1'); if (!host) return; let w = document.getElementById('agwarn');
+  if (!w) { w = document.createElement('div'); w.id = 'agwarn'; w.className = 'warn'; host.appendChild(w); }
+  const t = k => (S.txt['p1.' + k]||'').trim(); const miss = [['agsitu','상황'],['aggoal','목표'],['agcons','제약']].filter(([k]) => !t(k)).map(x => x[1]);
+  if (t('agendax') && miss.length) { w.hidden = false; w.innerHTML = '<b>' + miss.join(', ') + '</b>도 써 주세요. 세 가지가 있어야 AI가 우리 팀 사정에 맞게 답합니다.'; } else w.hidden = true;
+}
+function setOwnAgenda(o){
+  o = o || {}; const v = [o.q, o.situ, o.goal, o.cons];
+  ['agendax','agsitu','aggoal','agcons'].forEach((k, i) => S.txt['p1.' + k] = (v[i]||'').trim()); agCompose();
+}
+const AGK = ['agendax','agsitu','aggoal','agcons'], EXK = ['q','situ','goal','cons'];
+function ownExPH(){
+  if (!INSTR) return; const host = document.getElementById('fields-p1'); if (!host) return; const ex = OWN_EX[(S.sel['p1.team']||[])[0]];
+  const st = CFG.steps[0];
+  AGK.forEach((k, i) => { const fi = st.fields.findIndex(f => f.key === k); const inp = host.children[fi] && host.children[fi].querySelector('input');
+    if (inp) inp.placeholder = ex ? '예: ' + ex[EXK[i]] : (st.fields[fi].placeholder || ''); });
+  const b = document.getElementById('ownexbasis'); if (b) { b.innerHTML = ex ? '<details class="whyex"><summary>💡 이 예시를 고른 이유</summary><div class="whybody"><p><b>안건</b> ' + esc(ex.q) + '</p><p>' + esc(ex.why) + '</p><p class="src">근거: ' + esc(ex.basis) + '</p>' + (ex.check ? '<p class="whychk">⚠️ ' + esc(ex.check) + '</p>' : '') + '<p class="whychk2">공개 자료에 나온 사실만 상황 칸에 넣고 내부 숫자는 넣지 않았습니다. 수강생에게도 같은 기준을 안내합니다.</p></div></details>' : '<span class="src">팀을 고르면 이 팀 예시와 고른 이유가 여기에 나옵니다.</span>'; }
+}
+function ownExSwap(prev, team){
+  const pe = OWN_EX[prev]; if (!pe) return false;
+  const filled = AGK.some(k => (S.txt['p1.' + k]||'').trim()); if (!filled) return false;
+  const same = AGK.every((k, i) => (S.txt['p1.' + k]||'').trim() === (pe[EXK[i]]||'').trim()); if (!same) return false;
+  setOwnAgenda(OWN_EX[team]); return true;
+}
+function afterText(step, id){ if (step.id === 'p1' && /^p1\.ag/.test(id)) { agCompose(); agWarn(); renderQ2(); } }
+function bareQ(){ const v = (S.sel['p1.agenda']||[])[0]; const ot = (S.txt['p1.agendax']||'').trim();
+  if (ot) return ot.replace(/[?？]\s*$/, '') + '? 어떻게 하면 좋을까?';
+  const o = AG.find(x => x.v === v); return o ? o.q : ''; }
+function pickEx(){ const o = AG.find(x => x.v === (S.sel['p1.agenda']||[])[0]); return o && o.ex ? '예: ' + o.ex : ''; }
+function optionsOf(step, f){
+  if (f.byTeam) { const team = (S.sel['p1.team']||[])[0]; if (!team) return [{v:'', label:'(먼저 우리 팀을 고르세요)', disabled:true}]; return f.options.filter(o => o.team === team); }
+  if (f.fromPaste) { const a = alternatives(); if (!a.length) return [{v:'', label:'(3단계 결과 표를 붙여넣으면 대안이 여기에 나타납니다)', disabled:true}]; return a.map(x => ({v:x, label:x})); }
+  return f.options || [];
+}
+function sortCrit(){
+  const st = CFG.steps.find(x => x.id === 'p3'); const opts = st.fields.find(f => f.key === 'criteria').options; const a = S.sel['p3.criteria'];
+  if (!a || a.length < 2) return false; const b = a.slice().sort((x, y) => opts.findIndex(o => o.v === x) - opts.findIndex(o => o.v === y));
+  if (b.join('|') === a.join('|')) return false; S.sel['p3.criteria'] = b; S.edit['p3'] = null; save(); return true;
+}
+function pickValid(){
+  const a = alternatives(), p = (S.sel['p4.pick']||[])[0];
+  if (p && !a.includes(p)) { S.sel['p4.pick'] = []; S.edit['p4'] = null; S.edit['p5'] = null; S.edit['p6'] = null; save(); return true; } return false;
+}
+function cleanStale(){
+  const st0 = CFG.steps[0]; const teams = st0.fields.find(f => f.key === 'team').options.map(o => o.v);
+  const team = (S.sel['p1.team']||[])[0]; if (team && !teams.includes(team)) S.sel['p1.team'] = [];
+  const v = (S.sel['p1.agenda']||[])[0], o = AG.find(x => x.v === v); if (v && (!o || o.team !== (S.sel['p1.team']||[])[0])) S.sel['p1.agenda'] = [];
+  sortCrit(); pickValid(); save();
+}
+function afterPick(step){
+  renderQ2();
+  if (step.id === 'p3' && sortCrit()) { renderFields(step); renderPreview(step); }
+  if (step.id === 'p1') { const team = (S.sel['p1.team']||[])[0], v = (S.sel['p1.agenda']||[])[0], o = AG.find(x => x.v === v);
+    if (S.lastTeam !== team) { const sw = INSTR && ownExSwap(S.lastTeam, team); S.lastTeam = team; save(); if (sw) { S.edit['p1'] = null; save(); renderFields(CFG.steps[0]); renderPreview(CFG.steps[0]); } }
+    ownExPH();
+    if (o && o.team !== team) { S.sel['p1.agenda'] = []; save(); renderFields(CFG.steps[0]); }
+    renderFields(CFG.steps.find(x => x.id === 'p4')); }
+  CFG.steps.forEach(st => { if (st.template && st !== step) renderPreview(st); }); renderRecord(); }
+document.addEventListener('input', e => { if (e.target.closest('#fields-p1') || e.target.closest('#fields-p4')) setTimeout(() => { renderQ2(); CFG.steps.forEach(st => { if (st.template) renderPreview(st); }); renderRecord(); }, 0); });
+
+function checkAlt(text){
+  const t = parseTable(text); const ri = t.head.findIndex(h => /리스크/.test(h)); const ai = Math.max(0, t.head.findIndex(h => /대안/.test(h)));
+  const n = t.body.length, q = (String(text).match(/확인\s*필요/g)||[]).length;
+  const keep = t.body.some(r => /현행|유지/.test(r[ai]||''));
+  const emptyRisk = ri >= 0 ? t.body.filter(r => { const v = (r[ri]||'').replace(/[-\s.\/]/g,''); return v.length < 2 || /^(없음|해당없음|특별히없음|n\/?a)$/i.test(v); }).map(r => r[ai]) : [];
+  const T0 = String(text); const neg = /(확정할 수 없|판단하지 않|결론을 내리지 않|결론은 내리지 않)/.test(T0);
+  const concl = !neg && (/(대안\s*\d)[^\n]{0,30}(추천|권장|바람직|가장 적절|가장 유리|가장 좋)/.test(T0) || /(추천|권장)(합니다|드립니다|해요)|결론적으로/.test(T0));
+  return {n, q, keep, emptyRisk, concl};
+}
+function renderHint4(){
+  const el = document.getElementById('hint-p4'); if (!el) return;
+  if (!(S.pa.p3||'').trim()) { el.innerHTML = '<div class="hint">💡 <b>참고</b> 3단계 결과 표를 붙여넣으면 대안이 보기로 나옵니다.</div>'; return; }
+  const c = checkAlt(S.pa.p3), tips = [];
+  if (c.concl) tips.push('AI가 추천이나 결론을 말했어도 <b>고르는 것은 내가</b> 합니다. 추천 이유가 내 판단기준과 맞는지 보세요.');
+  if (!c.keep) tips.push('대안에 <b>현행 유지</b>가 없다면 직접 쓰기로 비교해 보는 분들이 많아요.');
+  if (c.emptyRisk.length) tips.push('리스크가 거의 비어 있는 대안이 있어요 (' + c.emptyRisk.map(esc).join(', ') + '). 그 대안은 5단계에서 꼭 점검해 보세요.');
+  if (!tips.length) tips.push('대안마다 리스크가 적혀 있습니다. 내가 고른 <b>판단기준</b>에 가장 맞는 대안을 고르세요.');
+  el.innerHTML = '<div class="hint">💡 <b>참고</b> ' + tips.join('<br>') + '<br><span style="color:var(--dim);font-size:13px">정답이 아닙니다. 우리 팀 사정이 다르면 다르게 고르세요.</span></div>';
+}
+function bindPaste(){
+  [['p3','대안'],['p5',''],['p6','']].forEach(([id]) => { const el = document.getElementById('paste-' + id); if (!el) return;
+    el.value = S.pa[id] || '';
+    el.addEventListener('input', () => { S.pa[id] = el.value; save();
+      const m = document.getElementById('pastemsg-' + id);
+      if (id === 'p3') { const n = alternatives().length; m.innerHTML = n ? '<span class="ok">대안 ' + n + '개를 찾았습니다. 4단계에서 고르세요.</span>' : '<span class="empty">표를 찾지 못했습니다. 답변 아래 복사 아이콘으로 다시 복사해 주세요.</span>';
+        pickValid(); const s4 = CFG.steps.find(x => x.id === 'p4'); renderFields(s4); renderPreview(s4); renderHint4(); CFG.steps.forEach(st => { if (st.template) renderPreview(st); }); }
+      else m.innerHTML = el.value.trim() ? '<span class="ok">[내 기록]에 저장했습니다.</span>' : '';
+      renderRecord(); if (window.panelSync && id !== 'p6' && document.getElementById('pp' + id.slice(1)) && document.getElementById('pp' + id.slice(1)).value !== el.value) panelSync(id, el.value); }); });
+}
+function renderRecord(){
+  const host = document.getElementById('rec-list'); if (!host) return;
+  const ids = CFG.steps.filter(s => s.template).map(s => s.id).filter(id => S.rec[id]);
+  let h = '';
+  const ag = (S.txt['p1.agfull']||'').trim() || ((AG.find(x => x.v === (S.sel['p1.agenda']||[])[0])||{}).label || '');
+  const pick = [(S.sel['p4.pick']||[])[0], (S.txt['p4.pickx']||'').trim()].filter(Boolean).join(' (덧붙임: ') + ((S.sel['p4.pick']||[])[0] && (S.txt['p4.pickx']||'').trim() ? ')' : '');
+  const why = [(S.sel['p4.why']||[])[0], (S.txt['p4.whyx']||'').trim()].filter(Boolean).join(' / ');
+  if (ag || pick) h += '<div class="rec"><h4>안건과 나의 선택</h4><div class="k">안건</div><div>' + esc(ag || '-') + '</div><div class="k" style="margin-top:6px">내가 고른 대안</div><div style="color:var(--red);font-weight:700">' + esc(pick || '-') + '</div><div class="k" style="margin-top:6px">고른 이유</div><div>' + esc(why || '-') + '</div></div>';
+  if ((S.pa.p6||'').trim()) h += '<div class="rec"><h4>AI 의사결정 1PAGE (실습 6 결과)</h4><div class="gptfinal">' + esc(S.pa.p6) + '</div></div>';
+  if ((S.pa.p5||'').trim()) h += '<div class="rec"><h4>반대편 점검 결과 (실습 5)</h4><div class="gptfinal">' + esc(S.pa.p5) + '</div></div>';
+  h += ids.map(id => { const r = S.rec[id];
+    return '<div class="rec"><h4>' + esc(r.name) + '</h4>' +
+      (r.choices.length ? '<div class="k">내가 고른 것</div><div>' + r.choices.map(esc).join('<br>') + '</div>' : '') +
+      (r.typed.length ? '<div class="k" style="margin-top:6px">내가 직접 쓴 것</div><div style="color:var(--red)">' + r.typed.map(esc).join('<br>') + '</div>' : '') +
+      (r.edits.length ? '<div class="k" style="margin-top:6px">프롬프트에서 직접 고친 부분</div><div>' + r.edits.map(c => (c.from ? '<del>' + esc(c.from) + '</del> → ' : '추가: ') + '<b style="color:var(--red)">' + esc(c.to || '(삭제)') + '</b>').join('<br>') + '</div>' : '') +
+      '<div class="k" style="margin-top:6px">최종 프롬프트</div><pre>' + esc(r.final) + '</pre></div>'; }).join('');
+  host.innerHTML = h || '<p class="empty">아직 기록이 없습니다. 각 단계에서 [프롬프트 복사]를 누르거나 결과를 붙여넣으면 여기에 남습니다.</p>';
+}
+const P3PRESETS = [
+  {name:'고객 중심', criteria:['고객 반응','실패했을 때의 위험'], cond:''},
+  {name:'현장 중심', criteria:['현장 팀원 부담','실행 속도'], cond:'다음 달에 팀원 한 명이 휴직한다'},
+  {name:'공공성 중심', criteria:['중소기업 협력사에 미치는 영향','우리 회사의 공공성'], cond:''},
+  {name:'비용 중심', criteria:['비용','실행 속도'], cond:'올해 남은 예산이 거의 없다'},
+  {name:'보안 중심', criteria:['보안과 정보 보호','실패했을 때의 위험'], cond:'고객정보를 다루는 업무다'},
+  {name:'소통 중심', criteria:['정보 공유와 소통','현장 팀원 부담'], cond:'여러 부서가 함께 움직여야 한다'},
+  {name:'협력사와 비용', criteria:['중소기업 협력사에 미치는 영향','비용'], cond:'협력사 대부분이 소상공인이다'},
+];
+const DEMOS = [
+  {name:'시연 A 방송기획.제작.공영라방 / 대표 출연', team:'방송기획.제작.공영라방', agenda:'bc2', criteria:['현장 팀원 부담','실패했을 때의 위험'], cond:'다음 달에 팀원 한 명이 휴직한다', who:'현장 팀원', to:'윗선 결재'},
+  {name:'시연 B CS.CX / 챗봇', team:'CS.CX', agenda:'cs2', criteria:['고객 반응','보안과 정보 보호'], cond:'', who:'고객', to:'유관 부서 협의'},
+  {name:'시연 C MD.상품기획 / 명절 방송', team:'MD.상품기획', agenda:'md1', criteria:['중소기업 협력사에 미치는 영향','현장 팀원 부담'], cond:'', who:'협력사', to:'팀원 공유'},
+];
+const OWN_EX = {};
+function ownExInit(){
+  if (!INSTR) return; const host = document.getElementById('fields-p1'); if (!host) return;
+  const box = document.createElement('div'); box.className = 'tnote'; box.id = 'ownex';
+  box.innerHTML = '<b>강사 메모</b>직접 쓰기 시험: 팀을 고른 뒤 누르면 그 팀 예시가 ③ 직접 쓰기 칸 네 개(안건, 상황, 목표, 제약)에 들어갑니다 ';
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.textContent = '이 팀 직접 쓰기 예시 넣기';
+  b.addEventListener('click', () => { const team = (S.sel['p1.team']||[])[0]; if (!team) { alert('먼저 우리 팀을 고르세요.'); return; }
+    setOwnAgenda(OWN_EX[team]); S.edit['p1'] = null; save(); renderFields(CFG.steps[0]); agWarn(); renderQ2(); CFG.steps.forEach(st => { if (st.template) renderPreview(st); }); renderRecord(); });
+  box.appendChild(b); const bs = document.createElement('div'); bs.id = 'ownexbasis'; bs.style.marginTop = '8px'; box.appendChild(bs); host.parentNode.insertBefore(box, host.nextSibling); ownExPH();
+}
+function demoInit(){
+  if (!INSTR) return; ownExInit();
+  const h1 = document.getElementById('fields-p1');
+  if (h1) { const box = document.createElement('div'); box.className = 'tnote';
+    box.innerHTML = '<b>강사 메모</b>시연 세트 불러오기 (1단계 안건, 3단계 판단기준, 5단계 입장, 6단계 쓰는 곳이 한 번에 채워집니다) ';
+    DEMOS.forEach(d => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.style.margin = '4px'; b.textContent = d.name;
+      b.addEventListener('click', () => { S.sel['p1.team'] = [d.team]; S.sel['p1.agenda'] = [d.agenda]; ['agendax','agsitu','aggoal','agcons','agfull'].forEach(k => S.txt['p1.' + k] = '');
+        S.sel['p3.criteria'] = d.criteria.slice(); S.txt['p3.cond'] = d.cond; S.sel['p5.who'] = [d.who]; S.sel['p6.to'] = [d.to];
+        ['p1','p3','p4','p5','p6'].forEach(k => S.edit[k] = null); sortCrit(); save();
+        CFG.steps.forEach(st => { renderFields(st); renderPreview(st); }); renderQ2(); renderRecord(); });
+      box.appendChild(b); });
+    h1.parentNode.insertBefore(box, h1); }
+  const h4 = document.getElementById('fields-p4');
+  if (h4) { const box = document.createElement('div'); box.className = 'tnote';
+    box.innerHTML = '<b>강사 메모</b>시연용 선택 (3단계 표를 붙여넣은 뒤 누릅니다) ';
+    [['대안 2 + 감당 가능', 1, '리스크를 우리 팀이 감당할 수 있다'], ['대안 1(현행 유지) + 되돌리기 쉬움', 0, '실패해도 되돌리기 쉽다']].forEach(([n, k, why]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.style.margin = '4px'; b.textContent = n;
+      b.addEventListener('click', () => { const a = alternatives(); if (!a.length) { alert('3단계 결과 표를 먼저 붙여넣으세요.'); return; }
+        S.sel['p4.pick'] = [a[Math.min(k, a.length - 1)]]; S.sel['p4.why'] = [why]; S.txt['p4.pickx'] = pickEx().replace(/^예: /, ''); save();
+        renderFields(CFG.steps.find(x => x.id === 'p4')); CFG.steps.forEach(st => { if (st.template) renderPreview(st); }); renderRecord(); });
+      box.appendChild(b); });
+    h4.parentNode.insertBefore(box, h4); }
+}
+function presetInit(){
+  if (!INSTR) return; const host = document.getElementById('p3presets'); if (!host) return;
+  const box = document.createElement('div'); box.className = 'tnote'; box.innerHTML = '<b>강사 메모</b>시연용 판단기준 예시 ';
+  P3PRESETS.forEach(p => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.style.margin = '4px'; b.textContent = p.name;
+    b.addEventListener('click', () => { S.sel['p3.criteria'] = p.criteria.slice(); S.txt['p3.cond'] = p.cond; S.edit['p3'] = null; sortCrit(); save();
+      const st = CFG.steps.find(x => x.id === 'p3'); renderFields(st); renderPreview(st); }); box.appendChild(b); });
+  host.appendChild(box);
+}
+function panelInit(){
+  if (!INSTR) return;
+  const btn = document.createElement('button'); btn.id = 'pbtn'; btn.type = 'button'; btn.textContent = '🧭 현장 판단';
+  const pn = document.createElement('div'); pn.id = 'panel';
+  pn.innerHTML = '<button class="x" type="button">×</button><h3>현장 판단 패널</h3><p class="sub" style="margin:0">강사 화면의 ChatGPT 결과를 붙여넣으면 짚을 점과 멘트를 알려 줍니다.</p>' +
+    '<div class="ptab"><button type="button" data-t="a" class="on">3단계 대안표</button><button type="button" data-t="b">5단계 반대편 점검</button></div>' +
+    '<div id="pa"><textarea class="paste" id="pp3" placeholder="3단계 결과 붙여넣기"></textarea><div id="pr3"></div></div>' +
+    '<div id="pb" style="display:none"><textarea class="paste" id="pp5" placeholder="5단계 결과 붙여넣기"></textarea><div id="pr5"></div></div>';
+  document.body.appendChild(btn); document.body.appendChild(pn);
+  btn.addEventListener('click', () => pn.classList.toggle('on'));
+  pn.querySelector('.x').addEventListener('click', () => pn.classList.remove('on'));
+  pn.querySelectorAll('.ptab button').forEach(b => b.addEventListener('click', () => { pn.querySelectorAll('.ptab button').forEach(x => x.classList.toggle('on', x === b));
+    document.getElementById('pa').style.display = b.dataset.t === 'a' ? '' : 'none'; document.getElementById('pb').style.display = b.dataset.t === 'b' ? '' : 'none'; }));
+  const pp3 = document.getElementById('pp3'), pp5 = document.getElementById('pp5');
+  pp3.value = S.pa.p3 || ''; pp5.value = S.pa.p5 || '';
+  const draw3 = () => { const c = checkAlt(pp3.value);
+    if (!c.n) { document.getElementById('pr3').innerHTML = '<p class="empty">표를 찾지 못했습니다.</p>'; return; }
+    const say = [];
+    if (c.concl) say.push('결론을 내리지 말라고 했는데도 AI가 추천을 했습니다. AI는 정리하고 싶어 합니다. 고르는 건 우리입니다.');
+    if (!c.keep) say.push('현행 유지가 빠졌습니다. 바꾸지 않는 것도 결정입니다.');
+    if (c.emptyRisk.length) say.push('리스크가 비어 있는 대안이 있습니다 (' + c.emptyRisk.join(', ') + '). 좋아 보이는 대안일수록 5단계에서 반대편으로 봅니다.');
+    say.push(c.q ? '[확인 필요]가 ' + c.q + '번 나왔습니다. 그 칸이 결정 전에 우리가 확인할 목록입니다.' : '[확인 필요]가 없습니다. AI가 우리 회사 사정을 다 아는 것처럼 답했습니다. 그대로 믿어도 될까요?');
+    say.push('2단계 그냥 묻기와 비교해 보십시오. 맥락을 주니 우리 회사 이야기가 됐습니까?');
+    document.getElementById('pr3').innerHTML = '<div class="bars"><div><b>' + c.n + '</b>대안</div><div><b>' + (c.keep ? '있음' : '없음') + '</b>현행 유지</div><div><b>' + c.emptyRisk.length + '</b>빈 리스크</div><div><b>' + c.q + '</b>[확인 필요]</div></div>' + say.map(x => '<div class="say">🎤 ' + esc(x) + '</div>').join(''); };
+  const draw5 = () => { const txt = pp5.value; if (!txt.trim()) { document.getElementById('pr5').innerHTML = ''; return; }
+    const i = txt.search(/필요한\s*데이터|더\s*필요한/); let tail = i >= 0 ? txt.slice(i) : ''; const j = tail.slice(5).search(/\n#{1,4}\s/); if (j > 0) tail = tail.slice(0, j + 5);
+    const pt = parseTable(tail, /데이터/); const tb = pt.body.length; const li = (tail.match(/^\s*(\d+[.)]|[-•*]|[①②③④⑤]|\|\s*\**\s*[①②③④⑤])\s*/gm)||[]).length; const n = tb || li;
+    document.getElementById('pr5').innerHTML = '<div class="bars"><div><b>' + (n || '?') + '</b>필요한 데이터</div><div><b>' + ((txt.match(/확인\s*필요/g)||[]).length) + '</b>[확인 필요]</div></div>' +
+      '<div class="say">🎤 AI가 말한 필요한 데이터를 보십시오. 이 데이터를 한눈에 보는 것이 DAY 3~4 대시보드입니다.</div><div class="say">🎤 반대편 지적 가운데 가장 아픈 것 하나를 골라 1PAGE의 리스크 첫 줄에 넣으십시오.</div>'; };
+  pp3.addEventListener('input', () => { S.pa.p3 = pp3.value; save(); const lp = document.getElementById('paste-p3'); if (lp) { lp.value = pp3.value; lp.dispatchEvent(new Event('input')); } else { pickValid(); renderFields(CFG.steps.find(x => x.id === 'p4')); renderHint4(); } draw3(); });
+  pp5.addEventListener('input', () => { S.pa.p5 = pp5.value; save(); const lp = document.getElementById('paste-p5'); if (lp) { lp.value = pp5.value; lp.dispatchEvent(new Event('input')); } else renderRecord(); draw5(); });
+  if (pp3.value) draw3(); if (pp5.value) draw5();
+  window.panelSync = (id, v) => { if (id === 'p3') { pp3.value = v; draw3(); } if (id === 'p5') { pp5.value = v; draw5(); } };
+}
+const PANEL_MAP = {p3:'a', p4:'a', p5:'b'};
+function panelFollow(){ const pn = document.getElementById('panel'); if (!pn) return; let id = ''; try { id = location.hash.slice(1); } catch (e) {}
+  const t = PANEL_MAP[id]; if (!t) return; const b = pn.querySelector('.ptab button[data-t="' + t + '"]'); if (b && !b.classList.contains('on')) b.click(); }
+function renderQ2(){ const el = document.getElementById('q-p2'); if (el) el.textContent = bareQ() || '(1단계에서 안건을 고르면 여기에 한 줄 질문이 나타납니다)'; }
+function bindBoxCopy(){
+  document.querySelectorAll('.box .copy').forEach(b => b.addEventListener('click', e => {
+    if (b.id === 'copy-p2' && !bareQ()) { alert('1단계에서 안건을 먼저 고르세요.'); return; }
+    copyText(b.parentElement.querySelector('pre').innerText, e.currentTarget); }));
+}
+function extraInit(){ cleanStale(); const _rf = renderFields; renderFields = function(st){ _rf(st); if (st.id === 'p1') { const h = document.getElementById('fields-p1'); if (h) [3,4,5].forEach(i => h.children[i] && h.children[i].classList.add('subfield')); agWarn(); if (window.ownExPH) ownExPH(); } }; agCompose(); renderFields(CFG.steps[0]); presetInit(); demoInit(); renderQ2(); bindBoxCopy(); bindPaste(); renderHint4(); panelInit(); renderRecord(); panelFollow(); window.addEventListener('hashchange', () => { show(); panelFollow(); }); const _sh = show; show = function(id){ _sh(id); panelFollow(); }; }
+
+init(); extraInit(); show();
+</script></body></html>
