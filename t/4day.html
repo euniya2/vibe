@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DAY 4 | 데이터 대시보드로 회의 준비하기</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='8' width='12' height='48' rx='4' fill='%23da3c48'/%3E%3Crect x='19' y='8' width='12' height='48' rx='4' fill='%23d8539a'/%3E%3Crect x='34' y='8' width='12' height='48' rx='4' fill='%238a7cc0'/%3E%3Crect x='49' y='8' width='12' height='48' rx='4' fill='%235ab8b7'/%3E%3C/svg%3E">
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#f6f6f9; --card:#fff; --ink:#1c1b22; --dim:#5d5b68;
+    --line:#e4e3ea; --code:#f3f2f7;
+    --accent:#3b3577; --accent2:#6e5fb0; --red:#c8323f; --teal:#23807f;
+    --grad:linear-gradient(90deg,#da3c48 0%,#d8539a 32%,#8a7cc0 64%,#7b9ecf 82%,#5ab8b7 100%);
+    --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif;
+    --mono:"D2Coding",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.72;font-size:16px;letter-spacing:-0.011em;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+
+  .topline{height:6px;background:var(--grad)}
+  header{background:var(--accent);color:#fff;padding:22px 20px}
+  header h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em}
+  .testmark{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;vertical-align:3px;background:#fff;color:var(--red);padding:1px 8px;border-radius:4px}
+
+  nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 0;z-index:10}
+  nav>.wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  nav>.urlbar{max-width:900px;margin:0 auto 9px;padding:0 20px 9px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px dashed var(--line)}
+  .urlbar .label{font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:3px 9px;border-radius:4px;align-self:center}
+  .urlbar .addr{font-size:19px;font-weight:700;color:var(--red)}
+  .urlbar .dl{margin-left:auto;align-self:center;background:var(--accent2);color:#fff;border:0;border-radius:6px;padding:6px 14px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+  .urlbar .dl:hover{background:var(--accent)}
+  .urlbar .dl.done{background:var(--teal)}
+  nav .day{font-size:12.5px;font-weight:700;color:var(--dim);margin:0 2px 0 8px}
+  nav a{display:inline-block;padding:6px 12px;border-radius:20px;font-size:13.5px;color:var(--accent);text-decoration:none;background:var(--code)}
+  nav a:hover{background:#e7e4f3}
+  nav a.on{background:var(--accent);color:#fff;font-weight:700}
+
+  .page{display:none;padding-bottom:30px}
+  .page.on{display:block}
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin:18px 0}
+  h2{font-size:20px;margin:0 0 4px;color:var(--accent);font-weight:700;letter-spacing:-0.02em}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 14px}
+  h3{font-size:16px;margin:20px 0 6px;font-weight:700}
+  h3 small{font-weight:400;color:var(--dim);font-size:13px}
+  .badge{display:inline-block;color:#fff;font-size:12.5px;padding:2px 9px;border-radius:4px;margin-right:7px;vertical-align:2px;background:var(--accent2)}
+
+  .box{position:relative;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:14px;margin:10px 0}
+  pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:13.5px;line-height:1.62;letter-spacing:0}
+  .box pre{padding-right:66px}
+  .copy{position:absolute;top:8px;right:8px;border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:6px;padding:4px 12px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .copy:hover{background:var(--accent);color:#fff}
+  .copy.done{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .auto{color:var(--accent2);font-weight:700}
+  .wait{border:1.5px dashed var(--accent2);background:#fbfaff;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:14.5px}
+
+  .rec{border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin:10px 0;background:#fff}
+  .rec h4{margin:0 0 6px;color:var(--accent);font-size:15.5px}
+  .rec div{white-space:pre-wrap;font-size:15px;line-height:1.55}
+  .logempty{font-size:14.5px;color:var(--dim);border:1.5px dashed var(--line);border-radius:8px;padding:12px 14px;margin:14px 0 0}
+  .note{border-left:3px solid var(--accent2);background:#f3f1fa;padding:10px 14px;margin:12px 0;font-size:14.5px;border-radius:0 6px 6px 0}
+  .warn{border-left:3px solid var(--red);background:#fdf0f1;padding:10px 14px;margin:12px 0;font-size:14.5px;border-radius:0 6px 6px 0}
+  .save{display:inline-block;font-size:13.5px;color:var(--dim);background:var(--code);border-radius:6px;padding:4px 10px;margin-top:4px}
+  .save b{color:var(--ink)}
+
+  .steps{counter-reset:step;display:grid;gap:8px;margin:12px 0}
+  .steps div{position:relative;padding:10px 12px 10px 42px;background:#fbfbfd;border:1px solid var(--line);border-radius:8px;font-size:15px}
+  .steps div:before{counter-increment:step;content:counter(step);position:absolute;left:12px;top:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:11px;font-weight:700}
+
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+  .cardbox{border:1px solid var(--line);border-radius:9px;padding:14px;background:#fbfbfd;font-size:14.5px}
+  .cardbox b{display:block;color:var(--accent);font-size:15px;margin-bottom:4px}
+
+  /* 숫자 후보 고르기 */
+  .picks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+  .pick{display:block;border:1.5px solid var(--line);border-radius:9px;padding:12px 14px;background:#fff;cursor:pointer}
+  .pick input{margin-right:6px;transform:scale(1.15);vertical-align:-1px}
+  .pick b{font-size:15.5px}
+  .pick .q{display:block;font-size:13.5px;color:var(--dim);margin-top:2px}
+  .pick .f{display:block;font-size:12.5px;color:var(--accent2);margin-top:6px}
+  .pick.on{border-color:var(--accent2);background:#f3f1fa}
+  .pick.off{opacity:.45;cursor:not-allowed}
+  .count{font-size:14px;font-weight:700;color:var(--accent2)}
+  @media(max-width:650px){.grid,.picks{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:var(--code);font-weight:700}
+  .n{text-align:right;white-space:nowrap}
+  @media(max-width:650px){table{display:block;overflow-x:auto;white-space:nowrap}}
+
+  .write{width:100%;min-height:84px;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#fff;color:var(--ink)}
+  .reasons{display:grid;gap:8px;margin:8px 0 14px}
+  .reasons .rrow{display:flex;align-items:center;gap:10px}
+  .reasons .rname{flex:none;width:170px;font-weight:700;font-size:15px;color:var(--accent)}
+  .reasons input{flex:1;min-width:0;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:#fff;color:var(--ink)}
+  .reasons .empty{font-size:14.5px;color:var(--dim);border:1.5px dashed var(--line);border-radius:8px;padding:12px 14px}
+  @media(max-width:650px){.reasons .rrow{flex-direction:column;align-items:stretch;gap:4px}.reasons .rname{width:auto}}
+  .ext{display:inline-block;margin-left:4px;font-weight:700;color:var(--accent2);text-decoration:underline}
+  .ext:hover{color:var(--accent)}
+
+  /* 구조 그림 (2단계) */
+  .wire{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;display:grid;gap:9px;margin:10px 0 4px}
+  .wire .row{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+  .wire .num{flex:none;justify-self:start;font-size:12px;font-weight:700;color:var(--accent);background:#fff;border:1px solid var(--accent2);border-radius:4px;padding:1px 7px;line-height:1.5;white-space:nowrap}
+  .wire .mid{display:grid;gap:6px}
+  .wire .ttl{font-weight:700;font-size:15px;line-height:1.4}
+  .wire .dim{font-size:12.5px;color:var(--dim)}
+  .wire .grow{flex:1}
+  .wire .btnlike{font-size:13px;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:3px 11px;white-space:nowrap}
+  .wire .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .wire .col{background:#f3f1fa;border:1px solid #cfc9ea;border-radius:8px;padding:11px 12px}
+  .wire .col .k{font-size:12.5px;color:var(--accent2)}
+  .wire .col .ttl{color:var(--accent)}
+  .wire .ph{display:flex;gap:5px;margin:10px 0 5px}
+  .wire .ph i{flex:1;height:28px;border:1px dashed var(--accent2);border-radius:4px;font-style:normal;font-size:12px;color:var(--accent2);display:grid;place-items:center}
+  .wire .bars{display:grid;gap:5px;margin:10px 0 5px}
+  .wire .bars i{height:6px;border:1px dashed var(--accent2);border-radius:4px}
+  .wire .lines{display:grid;gap:6px;margin-top:7px}
+  .wire .lines i{height:1px;background:var(--line)}
+  .wirecap{font-size:13.5px;color:var(--dim);margin:8px 0 0}
+  .peek{margin-left:8px;font-family:var(--sans);font-size:12.5px;font-weight:700;color:#fff;background:var(--accent2);border:0;border-radius:5px;padding:2px 10px;cursor:pointer;vertical-align:1px}
+  .peek:hover{background:var(--accent)}
+  .modal{position:fixed;inset:0;z-index:50;background:rgba(28,27,34,.55);display:grid;place-items:center;padding:20px}
+  .modal[hidden]{display:none}
+  .sheet{background:#fff;border-radius:12px;padding:16px 18px 18px;width:min(880px,100%);max-height:90vh;overflow:auto}
+  .sheethead{display:flex;justify-content:space-between;align-items:center;color:var(--accent);font-size:16px}
+  .closex{font:inherit;font-size:13px;color:var(--accent);background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 12px;cursor:pointer}
+  .closex:hover{background:var(--code)}
+  @media print{.modal,.peek{display:none}}
+  @media(max-width:650px){.wire .cols{grid-template-columns:1fr}}
+  .ask{font-size:16.5px;font-weight:700;color:var(--accent);margin:14px 0 6px}
+
+  .pager{display:flex;justify-content:space-between;gap:10px;margin-top:8px}
+  .btn{display:inline-block;background:var(--accent);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-size:14.5px;cursor:pointer;text-decoration:none}
+  .btn:hover{background:var(--accent2)}
+  .btn.ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+
+  .log td{vertical-align:top}
+  .log input,.log select,.log textarea{font:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:5px;padding:3px 6px;background:#fff;color:var(--ink)}
+  .log input{width:64px;text-align:right}
+  .log textarea{width:100%;min-height:38px;resize:vertical}
+
+  footer{color:var(--dim);font-size:13px;text-align:center;padding:24px 20px}
+  @media print{nav{display:none}body{background:#fff}.copy,.pager{display:none}.page{display:block}}
+  .lead{font-size:19px;font-weight:700;color:var(--accent);margin:12px 0 4px;letter-spacing:-0.02em}
+  .days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+  .dcard{border:1px solid var(--line);border-radius:9px;padding:12px 14px;background:#fff;font-size:15px;line-height:1.55}
+  .dcard b{display:block;color:var(--accent);font-size:16px;margin-bottom:3px}
+  .dcard.today{border:2px solid var(--red)}
+  .dcard.today b{color:var(--red)}
+  @media(max-width:650px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+
+<div class="topline"></div>
+<header><div class="wrap"><h1>DAY 4 | 데이터 대시보드로 회의 준비하기</h1></div></header>
+
+<nav>
+<div class="urlbar"><span class="label">실습 페이지</span><span class="addr">bit.ly/aiday04</span><button class="dl" id="copyData">상품본부 데이터 복사</button><button class="dl" id="csvData" style="margin-left:0">상품본부 CSV 내려받기</button></div>
+<div class="wrap" id="menu">
+  <a href="#start">시작</a>
+  <a href="#p6">6 다시 열기</a>
+  <a href="#p7">7 팀 살펴보기</a>
+  <a href="#p8">8 AI로 질문</a>
+  <a href="#p9">9 회의 자료</a>
+  <a href="#p10">10 우리 팀 관점</a>
+  <a href="#log">내 기록</a>
+</div>
+</nav>
+
+<div class="wrap">
+
+<!-- ==================== 시작 ==================== -->
+<div class="page" id="start">
+<section>
+  <h2>오늘 할 일</h2>
+  <p class="sub" style="margin:0">직책자 AI 모닝클래스 | 넷째 날</p>
+  <p class="lead">AI는 답을 대신 정해 주지 않습니다. 내 판단의 빈틈을 찾아 줍니다.</p>
+  <div class="days">
+    <div class="dcard"><b>DAY 1</b>우리 팀<br>AI 업무분류표</div>
+    <div class="dcard"><b>DAY 2</b>AI 의사결정<br>1PAGE</div>
+    <div class="dcard today"><b>DAY 3~4 (오늘)</b>데이터<br>대시보드</div>
+    <div class="dcard"><b>DAY 5</b>30일<br>Action Plan</div>
+  </div>
+  <div class="grid">
+    <div class="cardbox"><b>도구</b>기관이 준 <b style="display:inline;color:inherit;font-size:inherit">ChatGPT Edu</b> 계정 (개인 계정 아님) <a class="ext" href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT 열기 ↗</a></div>
+    <div class="cardbox"><b>오늘의 결과물</b>데이터 대시보드 V2와 회의 자료 한 장. 어제 저장한 <b style="display:inline;color:inherit;font-size:inherit">대시보드_V1</b>로 시작해, 끝에 <b style="display:inline;color:inherit;font-size:inherit">대시보드_V2</b>로 저장합니다.</div>
+    <div class="cardbox"><b>어제 실습</b>3일차 프롬프트를 다시 보려면 <a class="ext" href="3일차_실습가이드_수업용.html">3일차 실습 페이지 ↗</a></div>
+    <div class="cardbox"><b>오늘 답할 것</b>누구를 부르고 무엇을 확인할지, 회의를 여는 핵심 메시지 한 줄 · ⭐ 시간이 남으면</div>
+  </div>
+  <div class="cardbox"><b>화면을 반으로 나누면 편합니다</b>이 실습 페이지는 <b style="display:inline;color:inherit;font-size:inherit">Windows 키 + ←</b>, ChatGPT는 <b style="display:inline;color:inherit;font-size:inherit">Windows 키 + →</b>. 창을 클릭한 뒤 Windows 키를 누른 채 화살표를 누르면 화면 절반에 붙습니다.</div>
+  <div class="pager"><span></span><a class="btn" href="#p6">6 다시 열기 →</a></div>
+</section>
+</div>
+
+<!-- ==================== 4일차 ==================== -->
+<div class="page" id="p6">
+<section>
+  <h2><span class="badge">6</span>다시 열기 · 기준 바꿔 보기</h2>
+  <p class="sub">AI 없이 합니다 · 3일차 완성본(대시보드_V1)을 엽니다</p>
+  <div class="steps">
+    <div><b>대시보드_V1.html</b>을 더블클릭해 엽니다. 파일이 없으면 강사에게 예비 파일을 받습니다.</div>
+    <div>맨 위 <b>[상품본부 데이터 복사]</b>를 눌러 [데이터 넣기]에 붙여넣습니다.</div>
+    <div>칸 3 등급 구간에 우리 회사 기준(<b>A 97%, B 95.3%, C 93.5%</b>)을 넣어 보세요. 등급이 바뀐 팀은 몇 개인가요?</div>
+    <div>우리 회사 기준이라면 몇 %가 맞을지 생각해 보고 직접 바꿔 봅니다.</div>
+  </div>
+  <div class="note" id="yesterdayBox" hidden>어제 적은 답 · 먼저 부를 팀: <b id="yesterday" style="display:inline"></b></div>
+  <p class="ask">기준을 바꿔도 먼저 부를 팀은 같은가요?</p>
+  <div class="note">오늘은 이 판단을 회의로 가져갑니다. 누구를 부를지 고르고, 무엇을 확인할지 정해, 회의 자료 한 장으로 만듭니다.</div>
+  <div class="pager"><a class="btn ghost" href="#start">← 시작</a><a class="btn" href="#p7">7 팀 살펴보기 →</a></div>
+</section>
+</div>
+
+<div class="page" id="p7">
+<section>
+  <h2><span class="badge">7</span>팀 살펴보기 넣기</h2>
+  <p class="sub">ChatGPT 새 채팅 · <b>대시보드_V1.html 파일을 첨부</b>하고 아래 프롬프트를 보냅니다</p>
+  <div class="box"><button class="copy">복사</button><pre>첨부한 대시보드에 「팀 살펴보기」 칸을 추가합니다.
+칸 1·2·3의 내용과 기능은 그대로 둘 것. 단, 아래 [좁은 칸의 판단 도구]에 적은 것은 고칠 것.
+
+[배치]
+- 칸 2·3 오른쪽에 세 번째 칸으로 넣고, 아래 세 칸을 같은 폭, 같은 높이로 맞출 것
+- 세 칸의 높이는 칸 2 「팀별 비교」 내용 높이에 맞출 것. 칸 2에 빈 공간이 많이 남지 않게
+- 칸이 좁아져도 칸 3의 그래프는 칸의 폭과 남은 높이를 모두 채우게 다시 그릴 것
+- 팀 살펴보기 칸은 옆 칸과 높이를 맞추고, 목록이 넘치면 목록 부분만 칸 안에서 스크롤할 것. 전환 버튼은 위에 고정
+- 아래 세 칸은 지금보다 80px 높게 하고, 세 칸 높이는 같게 할 것. 늘어난 높이는 칸 안 내용이 고르게 나눠 쓸 것
+
+[좁은 칸의 판단 도구]
+- 공헌이익 기준 그래프: 빨간 팀만 이름을 자기 점 바로 옆에 쓰고, 나머지는 회색 점만. 회색 점에 마우스를 올리면 이름이 뜨게 하고, 마우스 감지 범위만 점 둘레로 넓힐 것
+- 가로 눈금은 20% 단위, 세로축 제목은 가로로, 가로축 제목은 눈금 숫자와 한 줄 띄울 것. 오른쪽 끝 140%가 잘리지 않게
+- 기준 입력 칸은 [표] [그래프] 버튼과 한 줄에 둘 것
+- 등급 구간: 입력은 항상 두 줄로 고정. 첫 줄 S ≥ [ ]%, A ≥ [ ]%, 둘째 줄 B ≥ [ ]%, C ≥ [ ]%, D: C 미만. [표] [그래프] 버튼은 첫 줄 오른쪽 끝. 등급 글자(S ≥ 등)는 13px 굵게, %와 'D: C 미만'은 12px, 입력 칸은 숫자 세 자리가 잘리지 않게 최소 52px
+- 전년 대비: 팀 이름 12px, 증감률 숫자는 화살표 끝 바로 옆, '감소 기준' 이름표가 칸 밖으로 잘리지 않게
+- 범위를 벗어난 점의 이름표(예: 선물세트 공헌이익 52.0% ◀ · 판로지원액 134.9% ▲)가 칸 밖으로 잘리지 않게, 길면 두 줄로 나눌 것
+
+[팀 살펴보기]
+- 위쪽에 전환 버튼 5개: [점검 필요] [공헌이익 미달] [전년보다 감소] [우수] [전체]. 버튼마다 해당 팀 수 표시
+- 기준은 칸 3 「판단 도구」의 값을 그대로 쓸 것. 칸 3에서 기준을 바꾸면 목록도 바로 바뀔 것
+  · 점검 필요: 등급이 C 이하이거나, 공헌이익 기준에 못 미친 팀
+  · 공헌이익 미달: 공헌이익 기준에 못 미친 팀
+  · 전년보다 감소: 전년 대비 감소 기준 이상 줄어든 팀 (칸 3에 전년 대비가 없으면 5%)
+  · 우수: 등급이 S이고 공헌이익 기준을 지킨 팀
+  (칸 3에 등급 구간이 없으면 처음 값 S 100% 이상, C 85% 미만으로 계산할 것)
+- 표가 아니라 팀마다 목록 한 칸으로 보여 줄 것
+  · 첫 줄: 팀 이름, 해당 기준 색 표시(C 등급 이하 빨강, 공헌이익 미달 빨강, 전년 감소 주황, 우수 초록), 오른쪽 끝에 '회의에서 다룰 팀' 체크
+  · 둘째 줄: 작게 달성률 · 공헌이익 달성률 · 전년 대비, 비고가 있으면 그 아래
+  · 맨 아래: '확인할 것' 메모 칸(한 줄 입력칸)
+
+[데이터 표]
+- 맨 아래 데이터 표는 처음에는 접어 두고, [데이터 표 보기] 버튼으로 펼칠 수 있게 할 것
+
+[필수 조건]
+- 데이터를 넣기 전에는 "데이터를 넣으면 팀 목록이 나타납니다" 표시
+- 외부 라이브러리 없이, 인터넷 없이도 열릴 것
+- 기존 기능(데이터 넣기·지우기·저장 방식 포함)은 그대로 둘 것
+- 넣은 데이터와 메모는 밖으로 보내지 말 것
+- 수정한 전체 파일을 .html로 내려받을 수 있게 할 것</pre></div>
+
+  <div class="wait">⏳ <b>기다리는 동안</b> 먼저 부를 팀 1곳과 이유를 적어 보세요. 다음 단계에서 AI에게 물을 때 씁니다.</div>
+  <textarea class="write" id="who" placeholder="예) 신선식품팀 — 목표에 못 미쳤는데 공헌이익도 기준 아래이고, 이유를 아직 모른다"></textarea>
+
+  <h3>만들어지면</h3>
+  <div class="steps">
+    <div>데이터를 넣고, 버튼 4개를 차례로 눌러 봅니다.</div>
+    <div>위에 적은 팀을 찾아 <b>'회의에서 다룰 팀'</b>에 체크합니다. 함께 다룰 팀이 있으면 더 체크합니다.</div>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#p6">← 6 다시 열기</a><a class="btn" href="#p8">8 AI로 질문 뽑기 →</a></div>
+</section>
+</div>
+
+<div class="page" id="p8">
+<section>
+  <h2><span class="badge">8</span>AI로 확인할 질문 뽑기</h2>
+  <p class="sub">ChatGPT 새 채팅 · 숫자는 넣지 않습니다. 상황만 말로 넣습니다</p>
+
+  <h3>넓은 질문 <small>무엇을 봐야 하나</small></h3>
+  <div class="box"><button class="copy">복사</button><pre>팀별 판로지원액(목표, 실적, 전년 실적)과 공헌이익(목표, 실적)을 대시보드로 본다.
+본부장의 관점에서 볼 포인트를 정리할 것.
+
+[요청]
+1. 먼저 확인할 순서 (3단계)
+2. 숫자 조합별로 의심해 볼 점 3가지 (예: 달성률은 높은데 공헌이익이 목표에 못 미친 경우)
+3. 팀장에게 물어볼 질문 3개
+
+[필수 조건]
+- 표 없이, 항목마다 한 줄로 짧게</pre></div>
+  <div class="wait">⏳ <b>AI가 답하는 동안</b> 아래에서 상황 하나를 고르고, 내 판단을 한 줄 적어 보세요.</div>
+
+  <h3>구체적인 질문 <small>내 판단의 빈틈 찾기</small></h3>
+  <p class="ask">7단계에서 '회의에서 다룰 팀'으로 체크한 팀에 맞는 상황을 고르세요</p>
+  <div class="picks" id="sits" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+  <p class="ask">알고 있는 사정이 있나요? <small style="font-weight:400;color:var(--dim);font-size:13.5px">선택 · 비고에 적힌 이유 등. 비워 두면 '알려진 이유는 없다'로 들어갑니다</small></p>
+  <textarea class="write" id="known" style="min-height:64px" placeholder="예) 비고에 '명절 선물세트 방송 추가'라고 적혀 있다"></textarea>
+  <p class="ask">이 상황에서 나는 어떻게 하려고 하나요? <small style="font-weight:400;color:var(--dim);font-size:13.5px">'무엇을 하겠다 + 왜'로 적으면 답이 날카로워집니다</small></p>
+  <div class="note">예) 목표 넘김 · 공헌이익 미달 팀이라면<br>
+  · 너그럽게: 목표를 넘겼고 방송 추가라는 이유도 있으니, 이번 공헌이익 미달은 인정하고 넘어가겠다.<br>
+  · 엄격하게: 많이 팔아도 남는 것이 적으면 의미가 줄어드니, 할인·방송비를 다시 따져 보라고 하겠다.<br>
+  · 조건 걸기: 방송 추가가 이번 한 번이면 인정하고, 다음 달에도 반복되면 판매 조건을 다시 짜겠다.</div>
+  <textarea class="write" id="myjudge" placeholder="예) 목표를 넘겼으니 이번에는 문제 삼지 않으려 한다"></textarea>
+  <div class="warn" id="sitWarn" hidden>상황을 고르고 내 판단을 적으면 아래 프롬프트가 완성됩니다.</div>
+  <div class="box"><button class="copy">복사</button><pre>본부장의 관점에서 답할 것.
+
+[상황] <span class="auto" id="sitLine">(위에서 고른 상황이 여기에 들어갑니다)</span>
+[내 판단] <span class="auto" id="judgeLine">(위에 적은 내 판단이 여기에 들어갑니다)</span>
+
+[요청]
+1. 이 판단이 틀릴 수 있는 경우 2개
+2. 팀장에게 꼭 확인할 질문 3개
+
+[필수 조건]
+- 일반론 말고 이 상황에 맞춰 답할 것
+- 항목마다 한 문장으로 짧게
+- 알 수 없는 원인은 단정하지 말고 '확인 필요'로 표시</pre></div>
+
+  <p class="ask">AI의 답에서 회의에 가져갈 질문 2~3개를 골라 적으세요</p>
+  <textarea class="write" id="pickq" placeholder="예) 공헌이익을 깎은 비용은 무엇이고, 다음에도 반복됩니까?"></textarea>
+  <div class="note">고른 질문을 대시보드 「팀 살펴보기」의 <b>'확인할 것'</b> 메모 칸에도 옮겨 적습니다. 다음 단계에서 회의 자료에 들어갑니다.</div>
+  <div class="pager"><a class="btn ghost" href="#p7">← 7 팀 살펴보기</a><a class="btn" href="#p9">9 회의 자료 →</a></div>
+</section>
+</div>
+
+<div class="page" id="p9">
+<section>
+  <h2><span class="badge">9</span>회의 자료 만들기</h2>
+  <p class="sub"><b>7단계와 같은 채팅에서 이어서</b> · 지금까지의 판단을 한 장으로 내보냅니다</p>
+  <div class="box"><button class="copy">복사</button><pre>지금 대시보드에 [회의 자료 만들기] 버튼을 추가합니다.
+기존 화면과 기능은 그대로 둘 것.
+
+[회의 자료]
+- 버튼 위치: 맨 위 [데이터 넣기] 옆
+- 누르면 한 장짜리 회의 자료가 화면 위에 뜰 것. 창은 A4 한 장처럼 넓게 할 것
+- 담을 내용
+  1. 제목과 오늘 날짜
+  2. 꼭 볼 숫자: 칸 1의 카드 값
+  3. 우수 사례: 「팀 살펴보기」의 우수 팀 이름과 달성률, 공헌이익 달성률을 연한 초록 상자로. 없으면 "해당 없음"
+  4. 회의에서 다룰 팀: 「팀 살펴보기」에서 체크한 팀의 달성률, 공헌이익 달성률, 전년 대비, 비고만 표로. 기준에 걸린 값(달성률 95% 미만, 공헌이익 기준 미달, 전년 대비 감소 기준 이상)은 빨강
+  5. 추가 확인사항: 팀마다 적어 둔 '확인할 것' 메모
+  6. 핵심 메시지: 직접 적는 한 줄 칸
+- [인쇄 / PDF] 버튼. 인쇄할 때는 회의 자료만 나올 것
+- 체크한 팀이 없으면 "팀 살펴보기에서 회의에서 다룰 팀을 체크해 주세요" 표시
+
+[필수 조건]
+- 외부 라이브러리 없이, 인터넷 없이도 열릴 것
+- 기존 기능(데이터 넣기·지우기·저장 방식 포함)은 그대로 둘 것
+- 넣은 데이터와 메모는 밖으로 보내지 말 것
+- 수정한 전체 파일을 .html로 내려받을 수 있게 할 것</pre></div>
+
+  <div class="wait">⏳ <b>기다리는 동안</b> 회의를 여는 핵심 메시지 한 줄을 적어 보세요.</div>
+  <textarea class="write" id="msg" placeholder="○○이 ○○입니다. 그래서 오늘 회의에서 ○○을 확인하겠습니다."></textarea>
+
+  <h3>만들어지면</h3>
+  <div class="steps">
+    <div>데이터를 넣고, 「팀 살펴보기」에서 팀을 체크하고 '확인할 것'을 적습니다.</div>
+    <div><b>[회의 자료 만들기]</b>를 눌러, 위에 적은 핵심 메시지를 넣습니다.</div>
+    <div>[인쇄 / PDF]로 한 장이 나오는지 봅니다.</div>
+  </div>
+  <p class="ask">옆 사람과 바꿔 보세요 · 이 한 장만 보고 회의를 시작할 수 있나요?</p>
+  <div class="pager"><a class="btn ghost" href="#p8">← 8 AI로 질문 뽑기</a><a class="btn" href="#p10">10 우리 팀 관점 →</a></div>
+</section>
+</div>
+
+<div class="page" id="p10">
+<section>
+  <h2><span class="badge">10</span>우리 팀 관점으로 바꾸기</h2>
+  <p class="sub"><b>같은 채팅에서 이어서</b> · 본부장 화면을 우리 조직의 화면으로 바꿉니다</p>
+
+  <h3>이름 변경 <small>본부 → 우리 팀</small></h3>
+  <div class="box"><button class="copy">복사</button><pre>맨 위 버튼 줄에 [이름 변경] 버튼을 추가합니다.
+- 누르면 작은 창이 열리고, '부서 이름'과 '팀 대신 쓸 이름' 두 칸과 [취소] [적용] 버튼을 둘 것
+- [적용]을 누르면 제목의 부서 이름과 화면의 '팀'이라는 말이 모두 바뀔 것 (예: 상품본부 → 가공식품팀, 팀 → 상품군)
+- 바뀌어야 할 곳: 맨 위 제목, 칸 제목, 전환 버튼, 표 머리글, 안내 문구, 회의 자료 제목과 표
+- 이미 이름을 바꾸는 칸이나 버튼이 있으면 새로 만들지 말고, 이 버튼 하나로 합칠 것
+- 데이터의 첫 열 이름이 '팀'이 아니어도 받을 것
+나머지는 그대로 둘 것. 수정한 전체 파일을 .html로 내려받을 수 있게 할 것.</pre></div>
+  <div class="wait">⏳ <b>기다리는 동안</b> 우리 팀이 평가받는 지표 3개와 S 등급 기준을 적어 보세요.</div>
+  <textarea class="write" id="mine" placeholder="예) 기한 내 처리율 — S 기준 95%"></textarea>
+
+  <h3>팀장의 화면으로 보기 <small>팀 안으로 한 단계 들어갑니다</small></h3>
+  <div class="steps">
+    <div>맨 위 <b>[이름 변경]</b>을 눌러 부서 이름을 <b>가공식품팀</b>, '팀'을 <b>상품군</b>으로 바꿉니다.</div>
+    <div>아래 데이터를 [복사]해 [데이터 넣기]에 붙여넣습니다. (가상 가공식품팀의 상품군별 데이터)</div>
+    <div>본부장 화면에서 가공식품팀은 달성률 106.5%였습니다. 팀 안에서는 어떻게 보이나요?</div>
+  </div>
+  <div class="box"><button class="copy">복사</button><pre id="dataTeam">상품군,목표,실적,전년실적,공헌이익목표,공헌이익실적,비고
+간편식,420,398,400,30,29,
+반찬·김치,360,371,350,26,27,
+음료·차,250,231,245,18,15,신제품 출시 지연
+과자·간식,300,318,295,21,24,
+선물세트,350,472,320,25,13,명절 선물세트 방송 추가</pre></div>
+  <span class="save">4일차 완성본 저장 이름 <b>대시보드_V2.html</b></span>
+
+  <h3>지표로 보기 <small>우리 팀이 평가받는 지표</small></h3>
+  <table>
+    <tr><th>지표</th><th>구분</th><th>단위</th><th class="n">목표</th><th class="n">실적</th><th class="n">전년 실적</th></tr>
+    <tr><td>판로지원액</td><td>성과</td><td>백만 원</td><td class="n">84,000</td><td class="n">81,900</td><td class="n">79,500</td></tr>
+    <tr><td>공헌이익</td><td>성과</td><td>백만 원</td><td class="n">2,000</td><td class="n">1,720</td><td class="n">1,880</td></tr>
+    <tr><td>기획PGM 판로지원액</td><td>전략</td><td>백만 원</td><td class="n">4,000</td><td class="n">4,300</td><td class="n">3,500</td></tr>
+    <tr><td>eTV 전용상품 판로지원액</td><td>전략</td><td>백만 원</td><td class="n">12,000</td><td class="n">10,560</td><td class="n">11,200</td></tr>
+    <tr><td>소상공인 방송편성비중</td><td>전략</td><td>%</td><td class="n">35</td><td class="n">33.6</td><td class="n">31</td></tr>
+  </table>
+  <div class="note"><b>성과지표</b>는 전사 공통, <b>전략지표</b>는 조직별로 정합니다. (가상 상품본부 예시)</div>
+  <div class="box"><button class="copy">복사</button><pre>지금 대시보드에 [지표 보기] 화면을 추가합니다. 기존 화면과 기능은 그대로 둘 것.
+
+[데이터 열 이름]
+지표, 구분, 단위, 목표, 실적, 전년실적
+
+[화면 구성]
+- [팀별 보기] [지표 보기] 전환 버튼은 맨 위 제목 바로 아래, 꼭 볼 숫자보다 위에 두고, 아래 내용과 간격을 충분히 둘 것. 지표 보기를 누르면 꼭 볼 숫자를 포함한 팀별 화면 전체가 숨겨지고 지표 화면만 보일 것
+- 지표 보기에는 [지표 데이터 넣기] 버튼을 따로 두고, 지표마다 카드 1장으로 보여 줄 것
+- 카드에는 지표 이름, 달성률(크게), 등급, 전년 대비(▲▼), 단위·목표·실적 한 줄(작게), 달성률 막대(얇게)
+- 막대의 100% 위치는 팀별 비교의 목표선처럼 검은 세로선으로, 이름은 '목표 100%'. 막대는 등급 C 이하만 빨강, 나머지는 진한 회색
+- 구분(성과·전략)별로 카드를 묶을 것. 카드는 작게, 한 줄에 3~5장
+- 지표마다 단위가 다르므로 달성률(%)로 비교할 것
+- 등급 구간이 있으면 그 값을 함께 쓸 것
+- 비율·비중(%) 지표의 전년 대비는 %p 차이로 표시할 것
+- 맨 아래 [지표 데이터 보기] 버튼으로 넣은 표를 펼쳐 볼 수 있게 할 것 (처음에는 접어 둘 것)
+
+[필수 조건]
+- 외부 라이브러리 없이, 인터넷 없이도 열릴 것
+- 기존 기능(데이터 넣기·지우기·저장 방식 포함)은 그대로 둘 것
+- 넣은 데이터는 밖으로 보내지 말 것
+- 수정한 전체 파일을 .html로 내려받을 수 있게 할 것</pre></div>
+  <div class="box"><button class="copy">복사</button><pre>지표,구분,단위,목표,실적,전년실적
+판로지원액,성과,백만 원,84000,81900,79500
+공헌이익,성과,백만 원,2000,1720,1880
+기획PGM 판로지원액,전략,백만 원,4000,4300,3500
+eTV 전용상품 판로지원액,전략,백만 원,12000,10560,11200
+소상공인 방송편성비중,전략,%,35,33.6,31</pre></div>
+  <div class="pager"><a class="btn ghost" href="#p9">← 9 회의 자료</a><a class="btn" href="#log">내 기록 →</a></div>
+</section>
+</div>
+
+<!-- ==================== 내 기록 ==================== -->
+<pre id="dataMD" hidden>팀,목표,실적,전년실적,공헌이익목표,공헌이익실적,비고
+생활팀,960,1062,900,72,76,소형가전 판매 호조
+패션팀,1200,972,1130,96,75,주력 브랜드 방송 취소
+문화팀,1520,1410,1390,68,80,
+신선식품팀,1120,1052,1040,80,78,
+가공식품팀,1680,1790,1610,120,108,명절 선물세트 방송 추가
+건강뷰티팀,1040,1081,960,90,96,신규 브랜드 입점</pre>
+<div class="page" id="log">
+<section>
+  <h2>내 기록</h2>
+  <p class="sub">3·4일차에 적은 답이 아래에 모입니다. [기록 복사]로 한 번에 복사할 수 있고, 이 PC의 브라우저에만 임시로 남습니다.</p>
+  <div class="note">3·4일차에 만든 대시보드와 회의 자료, 적어 둔 답은 <b>DAY 5 Action Plan에서 다시 씁니다.</b> 여러 사람이 함께 쓰는 PC라면 오늘 수업이 끝날 때 [기록 지우기]를 눌러 주세요.</div>
+  <button class="btn" id="copyLog">기록 복사</button>
+  <button class="btn ghost" id="clearLog">기록 지우기</button>
+  <div id="logList"></div>
+</section>
+</div>
+
+</div>
+<footer>AI 모닝클래스 | 판단에서 실행까지, 직책자의 AI 5일<br>※ 해당 문서는 배포 및 공유를 제한합니다<br>ⓒ 2026 JE. All rights reserved.<br><small>모든 팀 이름·지표·숫자는 교육용 가상 데이터입니다</small></footer>
+
+<script>
+/* ---------- 하위페이지 전환 ---------- */
+const pages = [...document.querySelectorAll('.page')];
+function show(id) {
+  if (!id) { try { id = location.hash.slice(1); } catch (e) {} }
+  const el = id && document.getElementById(id);
+  const target = el && el.classList.contains('page') ? id : 'start';
+  pages.forEach(p => p.classList.toggle('on', p.id === target));
+  document.querySelectorAll('#menu a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + target));
+  try { history.replaceState(null, '', '#' + target); } catch (e) {}
+  if (target === 'log') { try { renderLog(); } catch (e) {} }
+  window.scrollTo(0, 0);
+}
+// 메뉴·다음 버튼·안내 링크: 주소 이동 없이 바로 해당 화면으로
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  e.preventDefault();
+  show(a.getAttribute('href').slice(1));
+});
+
+/* ---------- 복사 ---------- */
+function copyText(text, btn) {
+  const done = () => { btn.textContent = '복사됨'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = btn.dataset.label || '복사'; btn.classList.remove('done'); }, 1500); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  function fallback() {
+    const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); done(); } catch (e) { alert('복사하지 못했습니다. 직접 선택해 복사해 주세요.'); }
+    t.remove();
+  }
+}
+// [예시 보기] 버튼 글자는 복사에서 뺌
+function promptText(pre) {
+  const c = pre.cloneNode(true);
+  c.querySelectorAll('.peek').forEach(x => x.remove());
+  return c.textContent;
+}
+document.querySelectorAll('.box .copy').forEach(b => b.addEventListener('click', () => copyText(promptText(b.parentElement.querySelector('pre')), b)));
+
+/* ---------- 예시 보기 (화면 위에 겹쳐 뜸) ---------- */
+function closeModals() { document.querySelectorAll('.modal').forEach(m => { m.hidden = true; }); }
+document.addEventListener('click', e => {
+  const opener = e.target.closest('[data-open]');
+  if (opener) { document.getElementById(opener.dataset.open).hidden = false; return; }
+  if (e.target.closest('.closex') || e.target.classList.contains('modal')) closeModals();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
+const dataBtn = document.getElementById('copyData');
+dataBtn.dataset.label = dataBtn.textContent;
+dataBtn.addEventListener('click', () => copyText(document.getElementById('dataMD').innerText, dataBtn));
+
+// 상품본부 데이터를 CSV 파일로 내려받기 (엑셀에서도 한글이 깨지지 않게 UTF-8 BOM)
+document.getElementById('csvData').addEventListener('click', e => {
+  const text = document.getElementById('dataMD').textContent.trim().replace(/\r?\n/g, '\r\n') + '\r\n';
+  const url = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a'); a.href = url; a.download = '상품본부_데이터.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const b = e.currentTarget; b.textContent = '내려받음'; b.classList.add('done');
+  setTimeout(() => { b.textContent = '상품본부 CSV 내려받기'; b.classList.remove('done'); }, 1500);
+});
+
+/* ---------- 숫자 후보: 고르면 3단계 프롬프트에 계산식이 들어감 ---------- */
+const CANDS = [
+  ['판로지원액 달성률', '계획대로 가고 있는가', '실적 합계 ÷ 목표 합계 × 100'],
+  ['전년 대비', '작년보다 나아졌는가', '(실적 합계 ÷ 전년실적 합계 − 1) × 100'],
+  ['공헌이익 달성률', '팔고 남긴 것도 지켰는가', '공헌이익실적 합계 ÷ 공헌이익목표 합계 × 100'],
+  ['목표 미달 팀 수', '누구와 이야기해야 하는가', '달성률(실적 ÷ 목표 × 100)이 95% 미만인 팀 수'],
+  ['공헌이익 미달 팀 수', '어디서 이익을 점검해야 하는가', '공헌이익 달성률(공헌이익실적 ÷ 공헌이익목표 × 100)이 100% 미만인 팀 수'],
+  ['가장 낮은 팀의 달성률', '가장 급한 곳은 어디인가', '팀별 달성률 중 가장 낮은 값과 그 팀 이름']
+];
+const picksBox = document.getElementById('picks');
+if (picksBox) picksBox.innerHTML = CANDS.map(([n, q, f], i) =>
+  `<label class="pick"><input type="checkbox" data-pick="${i}"><b>${n}</b><span class="q">${q}</span><span class="f">${f}</span></label>`).join('');
+const boxes = picksBox ? [...picksBox.querySelectorAll('input')] : [];
+function updatePicks() {
+  if (!picksBox) return;
+  const on = boxes.filter(b => b.checked);
+  boxes.forEach(b => { b.disabled = !b.checked && on.length >= 3; b.parentElement.classList.toggle('on', b.checked); b.parentElement.classList.toggle('off', b.disabled); });
+  document.getElementById('pickCount').textContent = on.length + ' / 3';
+  const lines = on.map(b => { const [n, , f] = CANDS[+b.dataset.pick]; return `- ${n}: ${f}`; });
+  document.getElementById('pickLines').textContent = lines.length ? lines.join('\n') : '(1단계에서 고른 숫자 3개가 여기에 들어갑니다)';
+  document.getElementById('pickWarn').hidden = on.length === 3;
+  renderReasons(on.map(b => +b.dataset.pick));
+}
+// 고른 숫자마다 이유를 적는 한 줄 칸. 체크를 풀면 그 줄도 사라짐
+const reasonVals = {};
+function renderReasons(ids) {
+  const box = document.getElementById('reasons');
+  Object.keys(reasonVals).forEach(k => { if (!ids.includes(+k)) delete reasonVals[k]; });
+  if (!ids.length) { box.innerHTML = '<div class="empty">위에서 숫자를 고르면 이유를 적는 칸이 생깁니다.</div>'; return; }
+  box.innerHTML = ids.map((i, n) =>
+    `<div class="rrow"><span class="rname">${CANDS[i][0]}</span><input type="text" data-reason="${i}" placeholder="${n === 0 ? '예) 계획에서 벗어나면 어느 팀에서 빠졌는지 확인한다' : '목표에서 벗어나면 나는 무엇을 하는가?'}"></div>`).join('');
+  box.querySelectorAll('input').forEach(inp => {
+    inp.value = reasonVals[inp.dataset.reason] || '';
+    inp.addEventListener('input', () => { reasonVals[inp.dataset.reason] = inp.value; save(); });
+  });
+}
+const reasonText = () => Object.keys(reasonVals).filter(k => reasonVals[k].trim()).map(k => `${CANDS[k][0]} — ${reasonVals[k].trim()}`).join('\n');
+boxes.forEach(b => b.addEventListener('change', () => { updatePicks(); save(); }));
+
+/* ---------- 브라우저 임시 저장 (이 PC에만) ---------- */
+// 3일차·4일차 페이지가 같은 키를 씀: 4일차에서 어제 적은 답을 읽을 수 있음
+const KEY = 'mc2612-day34';
+const IDS = ['judge1', 'judge2', 'who', 'known', 'myjudge', 'pickq', 'msg', 'mine'];
+const fields = () => IDS.map(id => document.getElementById(id)).filter(Boolean);
+function stored() {
+  try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; }
+}
+// 이 페이지에 있는 칸만 덮어쓰고, 다른 날 페이지에서 적은 값은 그대로 둠
+function save() {
+  const v = stored();
+  // 숫자 체크는 새로 열면 비어 있음: 하나도 체크하지 않았으면 저장해 둔 값을 그대로 둠
+  if (picksBox && boxes.some(b => b.checked)) {
+    v.picks = boxes.filter(b => b.checked).map(b => CANDS[+b.dataset.pick][0]);
+    v.reasons = reasonText();
+  }
+  fields().forEach(el => { v[el.id] = el.value; });
+  try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {}
+}
+function load() {
+  const v = stored();
+  fields().forEach(el => { if (v[el.id] != null) el.value = v[el.id]; });
+  // 숫자 체크는 되살리지 않음: 페이지를 새로 열면 빈 상태에서 다시 고름
+}
+fields().forEach(el => el.addEventListener('input', save));
+load(); updatePicks(); show();
+
+/* ---------- 8단계 상황 카드: 고르면 프롬프트가 완성됨 ---------- */
+// [상황, 생각할 점, 흐린 예시 판단]
+const SITS = [
+  ['판로지원액 목표는 넘겼는데 공헌이익은 크게 못 미친 팀이 있다.', '잘한 팀인가, 남는 것 없이 판 실적인가', '예) 목표를 넘겼으니 이번에는 문제 삼지 않으려 한다'],
+  ['목표에 크게 못 미쳤고 작년보다도 줄어든 팀이 있다. 이유는 보고받았다.', '이유를 아는 것으로 충분한가', '예) 이유를 보고받았으니 다음 분기까지 지켜보려 한다'],
+  ['목표에 조금 못 미쳤는데 공헌이익도 기준 아래인 팀이 있다. 이유는 아직 모른다.', '눈에 덜 띄지만 놓치기 쉬운 팀', '예) 차이가 크지 않으니 이번 회의에서는 다루지 않으려 한다'],
+  ['전체 달성률은 목표에 가까운데, 팀 사이 차이가 크다.', '전체 숫자가 가리는 것은 무엇인가', '예) 본부 전체가 목표에 가까우니 큰 문제는 없다고 보려 한다']
+];
+const sitsBox = document.getElementById('sits');
+if (sitsBox) sitsBox.innerHTML = SITS.map(([s, q], i) =>
+  `<label class="pick"><input type="radio" name="sit" value="${i}"><b>${s}</b><span class="q">${q}</span></label>`).join('');
+const sitRadios = sitsBox ? [...sitsBox.querySelectorAll('input')] : [];
+function updateSit() {
+  if (!sitsBox) return;
+  const on = sitRadios.find(r => r.checked);
+  const j = document.getElementById('myjudge').value.trim();
+  sitRadios.forEach(r => r.parentElement.classList.toggle('on', r.checked));
+  if (on) document.getElementById('myjudge').placeholder = SITS[+on.value][2];
+  // 알고 있는 사정(선택): 적으면 상황 뒤에 붙이고, 비우면 이유를 모른다고 붙임(상황 문장에 이미 '이유'가 있으면 그대로)
+  const k = document.getElementById('known').value.trim().replace(/\s*\n\s*/g, ' ');
+  let sit = on ? SITS[+on.value][0] : '';
+  if (on) sit += k ? ` 알고 있는 사정: ${k.replace(/[.。]\s*$/, '')}.` : (sit.includes('이유') ? '' : ' 알려진 이유는 없다.');
+  document.getElementById('sitLine').textContent = on ? sit : '(위에서 고른 상황이 여기에 들어갑니다)';
+  document.getElementById('judgeLine').textContent = j || '(위에 적은 내 판단이 여기에 들어갑니다)';
+  document.getElementById('sitWarn').hidden = !!(on && j);
+}
+sitRadios.forEach(r => r.addEventListener('change', updateSit));
+['myjudge', 'known'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updateSit); });
+updateSit();
+// 6단계: 어제(3일차 5단계) 적은 답이 이 PC에 남아 있으면 보여 줌
+const yBox = document.getElementById('yesterdayBox');
+if (yBox) {
+  const yv = (stored().judge2 || '').trim();
+  if (yv) { document.getElementById('yesterday').textContent = yv; yBox.hidden = false; }
+}
+
+// 내 기록: 3·4일차 페이지 어느 쪽에서 봐도 두 날의 기록을 모두 모음
+const LOG_LABELS = [['judge1', '먼저 부를 팀(처음)'], ['judge2', '먼저 부를 팀(다시)'], ['who', '먼저 부를 팀(4일차)'], ['known', '알고 있는 사정'], ['myjudge', '내 판단'], ['pickq', '고른 질문'], ['msg', '핵심 메시지'], ['mine', '우리 팀 지표']];
+function logItems() {
+  save();
+  // 저장소를 못 쓰는 브라우저에서도 지금 화면에 적힌 답은 들어가게 함
+  const v = stored();
+  fields().forEach(el => { v[el.id] = el.value; });
+  if (picksBox && boxes.some(b => b.checked)) { v.picks = boxes.filter(b => b.checked).map(b => CANDS[+b.dataset.pick][0]); v.reasons = reasonText(); }
+  const items = [];
+  if (v.picks && v.picks.length) items.push(['고른 숫자', v.picks.join(', ')]);
+  if (v.reasons) items.push(['고른 이유', v.reasons]);
+  LOG_LABELS.forEach(([id, label]) => { const t = (v[id] || '').trim(); if (t) items.push([label, t]); });
+  return items;
+}
+function escLog(t) { return String(t).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])); }
+function renderLog() {
+  const host = document.getElementById('logList'); if (!host) return;
+  const items = logItems();
+  host.innerHTML = items.length
+    ? items.map(([label, t]) => '<div class="rec"><h4>' + escLog(label) + '</h4><div>' + escLog(t) + '</div></div>').join('')
+    : '<p class="logempty">' + '아직 적은 답이 없습니다. 3·4일차 단계마다 적은 답이 여기에 모입니다.' + '</p>';
+}
+document.getElementById('copyLog').addEventListener('click', e => {
+  const s = '[3·4일차 내 기록]\n' + logItems().map(([label, t]) => `\n[${label}]\n${t}\n`).join('');
+  e.target.dataset.label = '기록 복사';
+  copyText(s, e.target);
+});
+// 처음 열 때 '내 기록' 화면이면 바로 그림(위의 show()가 이 코드보다 먼저 실행되므로)
+if (document.getElementById('log').classList.contains('on')) renderLog();
+document.getElementById('clearLog').addEventListener('click', () => {
+  if (!confirm('3·4일차에 적어 둔 기록을 모두 지울까요? 4일차 끝에 지우는 것을 권합니다.')) return;
+  fields().forEach(el => { el.value = ''; });
+  boxes.forEach(b => { b.checked = false; });
+  Object.keys(reasonVals).forEach(k => delete reasonVals[k]);
+  updatePicks();
+  renderLog();
+  try { localStorage.removeItem(KEY); } catch (e) {}
+});
+</script>
+</body>
+</html>
